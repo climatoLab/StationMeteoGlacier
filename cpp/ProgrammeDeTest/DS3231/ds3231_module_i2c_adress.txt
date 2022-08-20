@@ -1,0 +1,1 @@
+I2C address 0x68 is the DS3231 and 0x56 is the AT24C32. Note that on some of the new revision boards the AT24C32 address is 0x57.
