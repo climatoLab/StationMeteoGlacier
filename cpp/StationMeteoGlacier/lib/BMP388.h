@@ -6,19 +6,11 @@
 #include <Adafruit_Sensor.h>
 #include "Adafruit_BMP3XX.h"
 
-//#define BMP_SCK 13
-//#define BMP_MISO 12
-//#define BMP_MOSI 11
-//#define BMP_CS 10
-
 #define SEALEVELPRESSURE_HPA (1013.25)
 
 Adafruit_BMP3XX bmp;
 
-//const int PIN_GPS_EN = 12;
-//const int PIN_POW_EN = 13;
-
-bool BMP3XX_init_(){
+bool BMP3XX_init(){
   bool retCode = false;
   
   while (!Serial);
@@ -45,8 +37,8 @@ float bmpTemp(){
   return bmp.temperature;
 }
 
-float bmpPression(){
-  return bmp.pressure/100;
+float bmpPression(int echelle = 100){
+  return bmp.pressure/echelle;
 }
 
 float bmpAltitude(){
@@ -62,6 +54,7 @@ String Err_bmp3xx(){
   }
 }
 
+#ifdef DEBUG
 void i2c_init_(const int PIN_GPS_EN = 12,const int PIN_POW_EN = 13){
 
   pinMode(PIN_GPS_EN, OUTPUT);
@@ -71,3 +64,4 @@ void i2c_init_(const int PIN_GPS_EN = 12,const int PIN_POW_EN = 13){
 
   delay(500);
 }
+#endif
