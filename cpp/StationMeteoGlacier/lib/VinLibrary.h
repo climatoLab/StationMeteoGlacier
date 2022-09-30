@@ -1,13 +1,5 @@
 
-
-
-#ifdef DEBUG
-
 #include "MovingAverageFloat.h"  // https://github.com/pilotak/MovingAverageFloat
-
-#endif
-
-
 
 #define BROCHE_VIN_EXT 39       //Broche pour permettre de lire la tension d'entrée Vin (5Volts) du ESP32
 
