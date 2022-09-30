@@ -1,11 +1,9 @@
 
-#ifdef DEBUG
 
 #include "DHT.h"
 
 
 
-#endif
 
 #define BROCHE_DHT 25           //Broche pour le capteur DHT22 (température + humidité)
 
