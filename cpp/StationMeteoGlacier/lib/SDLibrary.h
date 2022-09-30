@@ -1,20 +1,14 @@
 #ifdef DEBUG
+#include "SPI.h"
+#endif
 
 #include "FS.h"
 #include "SD.h"
-#include "SPI.h"
 #include "fonctionsSD.h"
 
-#endif
-
-
-
 String donneesSD = "";
-// Détermine le nom des valeurs dans le tableau
-String labelsDonneesSD = String("Date;Heure;Vin;Temperature;Humidite;Pression;Intensite lumineuse; CO2 \r\n");
 
-
-void init_SD() {
+void init_SD(String path, String labelData) {
   if (!SD.begin(15)) {
     Serial.println("Échec de montage de la carte SD !");    //montage?
     return;
@@ -43,15 +37,16 @@ void init_SD() {
   bool i = false;
   while ( i == false) {
 
-    File file = SD.open("/donnee.txt");
+    File file = SD.open(path);
     //Si le fichier donnee.txt n'existe pas sur la carte SD
     if (!file) {
       Serial.println("Le fichier donnee.txt n'existe pas !");
       Serial.println("Écriture du nom des colonnes dans le fichier donnee.txt ...");
       //Écriture du nom de chaque colonne pour le "logging" des données
 
-      writeFile(SD, "/donnee.txt", labelsDonneesSD.c_str());
+      writeFile(SD, path, labelData.c_str());
       i = true;
+      break;
     }
     else {
       Serial.println("Le fichier donnee.txt existe déjà !");
@@ -61,3 +56,20 @@ void init_SD() {
     }
   }
 }
+
+bool sendData(String msg, String path){
+  appendFile(SD,path,msg.c_str());
+  return true;
+}
+
+
+
+#ifdef DEBUG
+void i2c_init_(const int PIN_POW_EN = 13) {
+
+  pinMode(PIN_POW_EN, OUTPUT);
+  digitalWrite(PIN_POW_EN, HIGH);
+  delay (500);
+}
+
+#endif

@@ -155,16 +155,3 @@ void testFileIO(fs::FS &fs, const char * path){
     Serial.printf("%u bytes written for %u ms\n", 2048 * 512, end);
     file.close();
 }
-
-
-
-
-#ifdef DEBUG
-void i2c_init_(const int PIN_POW_EN = 13) {
-
-  pinMode(PIN_POW_EN, OUTPUT);
-  digitalWrite(PIN_POW_EN, HIGH);
-  delay (500);
-}
-
-#endif
