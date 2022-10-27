@@ -46,19 +46,32 @@ DateTime heureAvancee(bool _DEFAULT_){
   return adjustTime;
 }
 
-String setTimeRTC(){
-  
+bool setTimeRTC(uint16_t YYYY, uint8_t MM,uint8_t DD, uint8_t hh, uint8_t mm, uint8_t ss){
+  rtc.adjust(DateTime(YYYY,MM,DD,hh,mm,ss));
+  return true;
 }
-
+String getTimeRTC(bool heureAvance = false){
+  /*int adj = 0;
+  if (heureAvance == true){
+    adj = 1;
+    rtc.adjust(rtc.now()+TimeSpan(0,+adj,0,0));
+  }else{
+    rtc.adjust(rtc.now()+TimeSpan(0,+adj,0,0));
+  }*/
+  char date[23] =  "YYYY/MM/DD hh:mm:ss";
+  rtc.now().toString(date);
+  return date;
+}
 bool timeAdjust(){
   bool retCode = false;
    
 }
-String MenuRTC(){
-  return
-  "M ou m -> afficher le Menu" + "\n" +
-  "S ou s -> modifier le temps enregistrer dans le module RTC" + "\n"; 
-}
+//String MenuRTC(){
+//  String txt = 
+//  "M ou m -> afficher le Menu" + "\n" +
+//  "S ou s -> modifier le temps enregistrer dans le module RTC" + "\n"; 
+//  return txt;
+//}
 
 
 #ifdef DEBUG
@@ -72,5 +85,5 @@ void i2c_init(const int PIN_POW_EN = 13){
 }
 #endif
 
-  
    
+  
