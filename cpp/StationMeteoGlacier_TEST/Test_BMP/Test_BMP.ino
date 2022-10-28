@@ -1,7 +1,7 @@
 /******************************************************************
- * Nom: Fichier Test pour la Librairie créer du BMP388
+ * Nom: Fichier Test pour la Librairie créer du GY-49
  * Créer par: Vincent Lavallée
- * Description: Ce programme assure et sert de référence pour de
+ * Description: Ce programme sert de référence pour de
  *              futurs utilisation de la librairies créer par les
  *              stagiaires de recherche sur la station météo.
  * 
