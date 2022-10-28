@@ -9,6 +9,10 @@
  *                  - Température (C) // Non-Calibré
  *                  - Pression (Pa)   // Non-Calibré
  *                  - Altitude (m)    // Non-Calibré
+ *         
+ * Liens : 
+ *        -
+ *        -
  * 
 ******************************************************************/
 
@@ -16,10 +20,10 @@
 #include <Wire.h> //Introduit la librarie I2C
 #endif
 
-//--- LIBRARIES UTILISÉES POUR LE BMP 388-- //
+//--- LIBRARIES UTILISÉES POUR LE BMP388 ---//
 #include <Adafruit_Sensor.h> // DE ADAFRUIT //
 #include "Adafruit_BMP3XX.h" // DE ADAFRUIT //
-//---------------------------//-------------//
+//------------------------------------------//
 #define SEALEVELPRESSURE_HPA (1013.25) //Définition de la pression au niveau de la mer.
 
 Adafruit_BMP3XX bmp; //Déclaration d'objet.

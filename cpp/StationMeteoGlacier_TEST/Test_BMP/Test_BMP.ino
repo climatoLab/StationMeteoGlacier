@@ -13,7 +13,7 @@
 #define uS_TO_S_FACTOR 1000000  //Convertion de us a sec (microsec x 1M = sec)
 
 #include "bmpLib.h" //Librarie développer pour le BMP388
-String DATA; //Encapsule toutes les données prises par le BMP388 sous format -String-
+String DATA; //Varaible qui encapsule toutes les données prises par le BMP388 sous format -String-
 
 void setup() {
   Serial.begin(115200);
@@ -29,7 +29,7 @@ void setup() {
 
   Serial.println(DATA); //Envoie sur le port série
   
-  delay(5000); //Delai de 5 sec.
+  delay(1000); //Delai pour permettre l'envoie au port série
 
   esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR); // Définition du deep sleep
   esp_deep_sleep_start(); // Entre en deep sleep
