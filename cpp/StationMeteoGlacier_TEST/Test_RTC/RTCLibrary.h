@@ -70,8 +70,13 @@ bool init_RTC() { // -> Fonction à introduire après l'initialisation du I2C. P
   }*/
 
 bool setTimeRTC(uint16_t YYYY, uint8_t MM, uint8_t DD, uint8_t hh, uint8_t mm, uint8_t ss) { //Fonction qui permet une modification simple de la date et heure enregistré.
-  rtc.adjust(DateTime(YYYY, MM, DD, hh, mm, ss)); //Ajuste le temps selon les prférences.
+  rtc.adjust(DateTime(YYYY, MM, DD, hh, mm, ss)); //Ajuste le temps selon les préférences.
   return true; //Retourne la confirmation du changement d'heure.
+}
+String getDateRTC(){
+  char date[11] =  "YYYY/MM/DD"; //Format
+  rtc.now().toString(date); //Conversion de la valeur actuel en String.
+  return date;
 }
 String getTimeRTC(bool heureAvance = false) { //Fonction qui retourne la valeur actuel du RTC
 
@@ -83,9 +88,9 @@ String getTimeRTC(bool heureAvance = false) { //Fonction qui retourne la valeur 
     rtc.adjust(rtc.now()+TimeSpan(0,+adj,0,0));
     }*/
 
-  char date[23] =  "YYYY/MM/DD hh:mm:ss"; //Format
-  rtc.now().toString(date); //Conversion de la valeur actuel en String.
-  return date;
+  char rTime[9] =  "hh:mm:ss"; //Format
+  rtc.now().toString(rTime); //Conversion de la valeur actuel en String.
+  return rTime;
 }
 bool timeAdjust() {
   bool retCode = false;

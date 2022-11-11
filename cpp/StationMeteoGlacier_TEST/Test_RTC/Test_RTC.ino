@@ -15,11 +15,11 @@ void setup() {
   i2c_init(); //-> Initiation du I2C // fonction seulement disponible en mode DEBUG
   init_RTC(); // Initialisation du capteur
   
-  //setTimeRTC(2022,10,27,17,54,0); -> Correspond à la date de la dernière modification du temps pour la station rouge.
+  //setTimeRTC(2022,11,11,16,10,0);// -> Correspond à la date de la dernière modification du temps pour la station rouge.
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  Serial.println(String(getTimeRTC(true))); //Imprime la date et l'heure enregistré par le RTC. 
+  Serial.println(String(getDateRTC()) + String(getTimeRTC(true))); //Imprime la date et l'heure enregistré par le RTC. 
   delay(1000);
 }
