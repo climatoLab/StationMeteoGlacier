@@ -25,8 +25,8 @@ void setup() {
 // Encapsulation des données:
 // Format : "Nom : Valeur"
   DATA =
-  "Température(C): " + String(lecture_Temperature_DHT()) + "\n" +
-  "Humidité (%): " + String(lecture_Humidite_DHT()) + "\n";
+  "Température(C): " + String(dhtTemp()) + "\n" +
+  "Humidité (%): " + String(dhtHumi()) + "\n";
 
   Serial.println(DATA); //Envoie sur le port série
   delay(1000); //Delai pour permettre l'envoie au port série
