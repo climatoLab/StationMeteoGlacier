@@ -74,7 +74,7 @@ bool setTimeRTC(uint16_t YYYY, uint8_t MM, uint8_t DD, uint8_t hh, uint8_t mm, u
   return true; //Retourne la confirmation du changement d'heure.
 }
 String getDateRTC(){
-  char date[11] =  "YYYY/MM/DD"; //Format
+  char date[11] =  "DD/MM/YYYY"; //Format
   rtc.now().toString(date); //Conversion de la valeur actuel en String.
   return date;
 }

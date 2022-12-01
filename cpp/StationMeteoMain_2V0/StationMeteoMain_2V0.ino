@@ -7,7 +7,7 @@
 
 ******************************************************************/
 
-#include "lib/StationMeteomain_2V0.h"//--> Librairie du fichier main.
+#include "lib/StationMeteoMain_2V0.h"//--> Librairie du fichier main.
 
 String path = "/Yamaska_A2022.txt"; //--> Chemin emprunter pour enregistrer les données sur la carte SD.
 String labelData = "Date, Time, Vin, bmpTemperature, bmpPression, bmpAltitude, dhtHumidite, dhtTemperature, tcTemperature, gyLuminosite\n"; //--> Première ligne enregistrer sur la carte SD, représente l'ordre des valeurs.
