@@ -16,12 +16,12 @@ void setup() {
   init_RTC(); // Initialisation du capteur
   
   // (AAAA, MM, JJ, hh, mm, ss)
-  setTimeRTC(2022,12,07,12,00,0);// -> Correspond à la date de la dernière modification du temps pour la station rouge.
-  //setTimeRTC(2022,12,07,11,57,0);// -> Correspond à la date de la dernière modification du temps pour la station blanche.
+  //setTimeRTC(2022,12,07,13,9,0);// -> Correspond à la date de la dernière modification du temps pour la station rouge.
+  //setTimeRTC(2022,12,07,13,14,0);// -> Correspond à la date de la dernière modification du temps pour la station blanche.
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  Serial.println(String(getDateRTC()) + String(getTimeRTC(true))); //Imprime la date et l'heure enregistré par le RTC. 
+  Serial.println(String(getDateRTC()) + " " + String(getTimeRTC(true))); //Imprime la date et l'heure enregistré par le RTC. 
   delay(1000);
 }
