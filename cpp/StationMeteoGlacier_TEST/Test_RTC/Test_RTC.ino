@@ -15,7 +15,9 @@ void setup() {
   i2c_init(); //-> Initiation du I2C // fonction seulement disponible en mode DEBUG
   init_RTC(); // Initialisation du capteur
   
-  //setTimeRTC(2022,11,11,16,10,0);// -> Correspond à la date de la dernière modification du temps pour la station rouge.
+  // (AAAA, MM, JJ, hh, mm, ss)
+  setTimeRTC(2022,12,07,12,00,0);// -> Correspond à la date de la dernière modification du temps pour la station rouge.
+  //setTimeRTC(2022,12,07,11,57,0);// -> Correspond à la date de la dernière modification du temps pour la station blanche.
 }
 
 void loop() {
