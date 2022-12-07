@@ -12,7 +12,7 @@
 String path = "/Yamaska_A2022.txt"; //--> Chemin emprunter pour enregistrer les données sur la carte SD.
 String labelData = "Date, Time, Vin, bmpTemperature, bmpPression, bmpAltitude, dhtHumidite, dhtTemperature, tcTemperature, gyLuminosite\n"; //--> Première ligne enregistrer sur la carte SD, représente l'ordre des valeurs.
 
-unsigned long timeSleep = 10; //--> Durée du Deep Sleep
+unsigned long timeSleep = 30; //--> Durée du Deep Sleep (sec)
 unsigned long micInSec = 1000000; //--> Facteur de conversion de microsec en sec pour le Deep Sleep
 unsigned long totSleep = timeSleep * micInSec; //--> Durée total du Deep Sleep en microsecondes.
 
