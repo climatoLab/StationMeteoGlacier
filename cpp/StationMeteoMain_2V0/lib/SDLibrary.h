@@ -1,9 +1,24 @@
+/******************************************************************
+   Nom: SDLibrairy.h
+   Créer par: Vincent Lavallée, Annabelle Lambert, Raphael Richard
+   Description: Librarie créer par les stagiaires de recherche de
+                Station météo pour permettre d'enregistrer les
+                données sur une carte SD
+
+   Liens :
+          - https://randomnerdtutorials.com/esp32-microsd-card-arduino/
+          -
+
+******************************************************************/
+
+
 #ifdef DEBUG
 #include "SPI.h"
 #endif
 
 #include "FS.h"
 #include "SD.h"
+
 #include "fonctionsSD.h"
 
 String donneesSD = "";

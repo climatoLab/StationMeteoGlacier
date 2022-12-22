@@ -9,7 +9,7 @@
                     - Température (C) // Non-Calibré
 
    Liens :
-          -
+          - https://github.com/adafruit/Adafruit-MAX31855-library
           -
 
 ******************************************************************/

@@ -9,7 +9,7 @@
  *                  - Luminosité (Lux) // Non-Calibré
  *         
  * Liens : 
- *        -
+ *        - https://github.com/RobTillaart/Max44009
  *        -
  * 
 ******************************************************************/
@@ -19,7 +19,7 @@
 #endif
 
 //--- LIBRARIES UTILISÉES POUR LE GY-49 ---//
-#include <Max44009.h> // DE ROB xxxxxx     //
+#include <Max44009.h> // DE ROB TILLAART   //
 //-----------------------------------------//
 
 Max44009 light(0x4A);  //Déclaration d'objet + sont adresse I2C.

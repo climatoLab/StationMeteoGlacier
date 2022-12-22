@@ -11,8 +11,8 @@
                     - Altitude (m)    // Non-Calibré
 
    Liens :
-          -
-          -
+          - https://github.com/adafruit/Adafruit_Sensor
+          - https://github.com/adafruit/Adafruit_BMP3XX
 
 ******************************************************************/
 
