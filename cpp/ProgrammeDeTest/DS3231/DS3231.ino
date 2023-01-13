@@ -10,7 +10,7 @@ const int PIN_POW_EN = 13;
 
 void setup () {
 
-#ifndef ESP8266
+#ifndef ESP32
   while (!Serial); // for Leonardo/Micro/Zero
 #endif
 

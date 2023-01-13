@@ -39,7 +39,8 @@ void loop() {
     rps = 1000. / deltaTime;
   }
 
-  WindSpeed = rps * 3.66;
+  //WindSpeed = rps * 3.66;
+  WindSpeed = rps * 2.4;
   Serial.println(WindSpeed);
 
   //Serial.print(Rotations); Serial.print("\t\t");
