@@ -1,0 +1,26 @@
+#######################################
+# Syntax Coloring Map for TGP Decodeur
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Decodeur	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+available	KEYWORD2
+getArgCount	KEYWORD2
+getCommand	KEYWORD2
+getArg	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+FLOTTANT	LITERAL1
+HEXA	LITERAL1
+ENTIER	LITERAL1
+TEXTE	LITERAL1
