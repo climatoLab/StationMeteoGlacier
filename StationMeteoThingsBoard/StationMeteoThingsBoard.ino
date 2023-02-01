@@ -18,7 +18,7 @@
 #include "SDLibrary.h"
 #include "RTCLibrary.h"
 #include "VinLibrary.h"
-//Valeurs pour sauvegarder dans la mémoire flash de l'esp32 
+///Valeurs pour sauvegarder dans la mémoire flash de l'esp32 
 Preferences mesPreferences;
 //-----------------------------------------------------------------------
 
@@ -140,7 +140,7 @@ float lastrps = 1; // Permet d'avoir un affichage initiale lors du démarage du 
 
 
 //Mode deep sleep
-unsigned long timeSleep = 15;  //--> Durée du Deep Sleep (sec)
+unsigned long timeSleep = 60;  //--> Durée du Deep Sleep (sec)
 unsigned long timeSleepRecharge = 600; //--> Durée du Deep Sleep pour la recharge (sec)
 unsigned long micInSec = 1000000; //--> Facteur de conversion de microsec en sec pour le Deep Sleep
 unsigned long totSleep = timeSleep * micInSec; //--> Durée total du Deep Sleep en microsecondes.
@@ -167,12 +167,24 @@ void setup() {
   mesPreferences.begin("maConfig", false);
   //pinMode(PIN_GPS_EN, OUTPUT);
   //digitalWrite(PIN_GPS_EN, HIGH);
+  
+  //Initialise l'anémomètre
+  pinMode(WindSensorPin, INPUT);
+  attachInterrupt(digitalPinToInterrupt(WindSensorPin), isr_rotation, FALLING);
+  lastInterrupt = millis();  
+  //Initialise le bus de communication I2C
   i2c_init_();
+  //Initialise le RTC
   init_RTC();  
+  //Initialise le BMP388
   BMP3XX_init();
+  //Initialise le DHT22
   init_Humidite_DHT();
+  //Initialise le VL53L1X
   init_VL();
+  //Permet de détecter la tension d'entrée Vin du système
   init_VinExt();
+  //Initialise le bouclier pour la carte micro SD
   init_SD(path, labelData);
   //Configure le PCF8583 en mode compteur :
   PCF8583_config_cntr(PCF_I2C_ADDR);
@@ -181,7 +193,9 @@ void setup() {
   //Pour activer la gyrouette  
   pinMode(34, OUTPUT);
   digitalWrite(34, HIGH);
+  //Pour afficher le menu dans le moniteur série
   menu();    
+  
   #ifdef modeAutomatique
   //if(lecture_VinExt() <= 3.1){
     //esp_deep_sleep(totSleepRecharge);   
@@ -201,6 +215,7 @@ void loop() {
   tb.loop();
   decodage();
 
+  //Calculs pour envoyer les données de température avec un chiffre après la virgule et mesure des données captées par les modules
   bmpTemperatureC = bmpTemp()*10;
   bmpPressionHPa = bmpPression();// / 100.0F / 10);
   dhtHumidite = dhtHumi();
@@ -252,6 +267,7 @@ void loop() {
     //#define modeAutomatique
   } 
 
+  //Si le modeAutomatique est défini, la station va alors envoyer des données au serveur ThingsBoard préconfiguré
   #ifdef modeAutomatique
   unsigned long cur_millis = millis(); //--> indique la valeur actuel des millis() 
   if(cur_millis - pre_millis >= trigger_NSD){

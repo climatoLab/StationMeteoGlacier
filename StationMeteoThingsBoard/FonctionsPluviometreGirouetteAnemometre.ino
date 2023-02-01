@@ -170,4 +170,51 @@ Serial.println(String(dirVent) + "\n");
 }
 
 
-//Gyrouette/////////////////////////////////////////////////////////////////////////////////////////////////////
+//Anémomètre/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void anemometre(){
+  //Rotations = 0; // Set Rotations count to 0 ready for calculations
+
+  // sei(); // Enables interrupts
+  // delay (3000); // Wait 3 seconds to average
+  // cli(); // Disable interrupts
+
+  // convert to mp/h using the formula V=P(2.25/t)
+  // V = P(2.25/3) = P * 0.75
+  if (flagISR) {
+    rps = 1000. / deltaTime;
+    flagISR = false;
+  }
+  if (millis() - lastInterrupt > 5000)
+  {
+    rps = 0.00;
+  }
+
+  /*if (rps == inf) {
+    rps = 0;
+    }*/
+  //WindSpeed = rps * 3.66;
+
+  WindSpeed = rps * 2.4;
+  //if (millis()-timerDisplay > delayDisplay) {
+  if (rps != lastrps) {
+    lastrps = rps;
+    Serial.println(WindSpeed);
+    //timerDisplay = millis();
+  }
+
+  //Serial.print(Rotations); Serial.print("\t\t");
+  //Serial.println(WindSpeed);  
+}
+
+void envoyerAnemometre(){
+  
+}
+
+// This is the function that the interrupt calls to increment the rotation count
+void isr_rotation () {
+  deltaTime = millis() - lastInterrupt;
+  lastInterrupt = millis();
+  flagISR = true;
+  //Serial.println("Paquette");
+}
