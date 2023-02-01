@@ -78,12 +78,12 @@ void envoieGirouette(){
     derniereEnvoieMESURECAPTEURS = millis();
 
     valpot = analogRead(34);
-    Serial.println("sortie analogique de la girouette = ");
+    Serial.print("sortie analogique de la girouette = ");
     Pcardinaux = valpot;
-    Serial.println(String(Pcardinaux) + "\n");
+    Serial.println(Pcardinaux);
 
     roseDESvents(valpot);
-    tb.sendTelemetryFloat("Val potentiomètre", valpot);
+    //tb.sendTelemetryFloat("Val potentiomètre", valpot);
     tb.sendTelemetryFloat("Direction", Pcardinaux);
   }  
 }
@@ -139,7 +139,7 @@ void roseDESvents(int valpot) {
 //  else if(angle == 338) dirVent = "NNO";      
 //  else  dirVent = "N";
 
-Serial.println(dirVent);
+Serial.println(String(dirVent) + "\n");
 /*
   
   if (valpot >= 1550 && valpot < 2550) {

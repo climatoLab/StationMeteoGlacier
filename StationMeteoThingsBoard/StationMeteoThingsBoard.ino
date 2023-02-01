@@ -30,15 +30,14 @@ Preferences mesPreferences;
 #define PIN_MQ135 A0
 #define BROCHE_RX_GPS 27
 #define BROCHE_TX_GPS 26
-#define Version ""
+#define WindSensorPin 35 // The pin location of the anemometer 
+#define Version "1.0"
 #define modeAutomatique //Commenter pour utiliser le mode manuelle et enlever le commentaire pour utiliser le mode automatique
 //-----------------------------------------------------------------------
 
 //--- Declaration des objets, constantes, et variables globales----------
 
 //Valeurs pour la connexion au réseau WiFi
-//const char* ssid = "Dista";  // Enter SSID here CAL-Techno
-//const char* pwd = "dista-wifi";  //Enter Password here technophys123
 int timeout = 0;
 boolean etat_connection = false;
 boolean isSubcribed = false;  //Utilisé pour connaitre état de la connexion avec Thingsboard
@@ -46,6 +45,8 @@ WiFiClient espClient;
 String wifiTest = mesPreferences.getString("SSID", "");
 //WiFiSignal sig = WiFi.RSSI();
 //float strength = sig.getStrength();
+//const char* ssid = "Dista";  // Enter SSID here CAL-Techno
+//const char* pwd = "dista-wifi";  //Enter Password here technophys123
 
 //Valeurs pour utiliser le menu géré par le décodeur
 Decodeur monDecodeur(&Serial);
@@ -99,21 +100,26 @@ const int PIN_POW_EN = 13; //Pin pour le 3V3
 uint16_t GPSBaud = 9600;
 TinyGPSPlus gps;
 
+
 //Valeurs pour ThingsBoard
-bool flagCtemperatures, flagHPaBmp, flagEnvoie, flagEnvoieAuto, flagHdht, flagMontreheureRtc, flagEcritSd, flagGy49, flagVin, flagMesures, flagGirouette;
+bool flagCtemperatures, flagHPaBmp, flagEnvoie, flagEnvoieAuto, flagHdht, flagMontreheureRtc, flagEcritSd, flagGy49, flagVin, flagMesures, flagGirouette, flagAutomatique;
+
 
 //Délais
 uint16_t compteurTB;
 uint16_t CompteurC, bmpCompteurHPa, gy49CompteurLux, VinCompteur, gpsCompteur, dhtCompteurHum, vlComptpeurMM, sdCompteur;
 
+
 //Valeurs pour la carte micro SD
 uint16_t NbrEcritures;
+
 
 //Valeurs pour le pluviomètre
 const uint8_t PCF_I2C_ADDR = 0x50; //Adresse I2C du RTC PCF8583
 uint16_t CompteurPluie;
 
-//Gyrouette
+
+//Valeurs pour la girouette
 unsigned long derniereMESURECAPTEURS = millis();
 unsigned long derniereEnvoieMESURECAPTEURS = millis();
 int delai_capteur_lecture = 250;
@@ -122,10 +128,23 @@ int valpot;// valeur analogique du potentiomètre
 int Pcardinaux;
 
 
+//Valeurs pour l'anémomètre
+volatile unsigned long lastInterrupt;
+volatile unsigned int deltaTime ;
+unsigned long timerDisplay = millis();
+int delayDisplay = 500;
+volatile bool flagISR = false;
+float WindSpeed; // speed miles per hour
+float rps = 0;
+float lastrps = 1; // Permet d'avoir un affichage initiale lors du démarage du code
+
+
 //Mode deep sleep
-unsigned long timeSleep = 60; //--> Durée du Deep Sleep (sec)
+unsigned long timeSleep = 15;  //--> Durée du Deep Sleep (sec)
+unsigned long timeSleepRecharge = 600; //--> Durée du Deep Sleep pour la recharge (sec)
 unsigned long micInSec = 1000000; //--> Facteur de conversion de microsec en sec pour le Deep Sleep
 unsigned long totSleep = timeSleep * micInSec; //--> Durée total du Deep Sleep en microsecondes.
+unsigned long totSleepRecharge = timeSleepRecharge * micInSec; //--> Durée total du Deep Sleep en microsecondes si la tension de la batterie est trop faible pour le permettre de se recharger (<=3.1)
 unsigned long pre_millis = 0; //--> Initialisation de la variable utiliser pour le delay sans arrêt <No_Stop_Delay (NSD)>
 unsigned long trigger_NSD = 5000; //--> Trigger pour indiquer au delay sans arrêt qui est temps d'effectuer une action. <No_Stop_Delay (NSD)>
 unsigned long compteurSleep;
@@ -163,15 +182,16 @@ void setup() {
   pinMode(34, OUTPUT);
   digitalWrite(34, HIGH);
   menu();    
-  //flagEnvoie = true; //Pour envoyer des données au serveur de ThingsBoard et les afficher sur le moniteur série
   #ifdef modeAutomatique
+  //if(lecture_VinExt() <= 3.1){
+    //esp_deep_sleep(totSleepRecharge);   
+  //}
   Wifi_begin(); //Se connecte au réseau WiFi préconfiguré par ses paramètres sauvegardés dans la mémoire Flash de l'ESP32
   Serial.println("Initializing TB connection");
   delay(1000);
   connecteTB(); //Se connecte au serveur ThingsBoard préconfiguré par ses paramètres sauvegardés dans la mémoire Flash de l'ESP32
   delay(1000);
   flagEnvoieAuto = true;
-  flagEnvoie = false; //Envoie les données vers ThingsBoard
   sendData(str_data(), path); 
   #endif
   
@@ -227,8 +247,12 @@ void loop() {
   else if(flagGirouette == true){
     girouette(); 
   }
+  else if(flagAutomatique == true){
+    //ESP.restart();
+    //#define modeAutomatique
+  } 
 
-  #ifdef modeAutomatique 
+  #ifdef modeAutomatique
   unsigned long cur_millis = millis(); //--> indique la valeur actuel des millis() 
   if(cur_millis - pre_millis >= trigger_NSD){
     envoieTemperaturesC();
@@ -246,8 +270,8 @@ void loop() {
     if(cur_millis - compteurSleep >= stationSleep){ //--> Condition que le trigger_NSD est respecter en rapport avec la différence des millis actuel et de l'ancienne boucle.
       esp_deep_sleep(totSleep); //--> Entre en mode deep sleep pour une durée de x microsecondes
       compteurSleep = cur_millis;
-    }   
-   }
+    }  
+  }
   #endif
 }
 

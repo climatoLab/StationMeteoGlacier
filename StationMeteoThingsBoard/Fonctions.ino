@@ -30,6 +30,7 @@ void menu() {
   Serial.println("I pour afficher l'intensité du signal du réseau WiFi (RSSI)");
   Serial.println("S ou s pour la configuration Thingsboard");
   Serial.println("E pour envoyer les mesures de la station météo vers ThingsBoard et e pour arrêter");
+  Serial.println("U pour activer le mode automatique et u pour arrêter");
   Serial.println("V ou v pour obtenir la Version du programme");
   Serial.println("M ou m pour afficher ce menu");  
   Serial.println("R ou r pou restarter l'ESP32");    
@@ -267,12 +268,24 @@ void decodage() {
       case 'R' : case 'r' :
         ESP.restart();
       break;  
+
+      //++++++++++++++++++++++++++++++++++++++++++++++
+      //case pour activer le mode automatique
+      //++++++++++++++++++++++++++++++++++++++++++++++   
+      case 'U' :
+        flagAutomatique = true;
+      break;
+
+      case 'u' :
+        flagAutomatique = false;
+      break;      
       
       default:
         Serial.println(NAK);
     }
   }
 }
+
 
 void rtcMontreDate(){
   Serial.println("Date : " + String(getDateRTC()) + "\n");
@@ -446,7 +459,7 @@ void envoieMesures(){
     envoieRSSI();
     envoieGirouette();
     NbrMessagesEnvoyes++;
-    Serial.println("Nbr messages envoyés = " + String(NbrMessagesEnvoyes)+ "\n");
+    Serial.println("Nbr messages envoyés = " + String(NbrMessagesEnvoyes)+ "\n\n");
     //compteurTB = temps;  
     delay(5000);    
   //}  
@@ -469,7 +482,7 @@ void envoiePluviometre() {
 void envoieTemperaturesC() {
   
   if (bmpTemperatureC >= -40 && bmpTemperatureC <= 85) { 
-    tb.sendTelemetryFloat("Température BMP", bmpTemperatureC);  
+    tb.sendTelemetryFloat("\n\nTempérature BMP", bmpTemperatureC);  
     Serial.println(String ("Température du BMP (°C) = ") + String(bmpTemperatureC) + String(" °C"));
     //NbrMessagesEnvoyes++;
    }
