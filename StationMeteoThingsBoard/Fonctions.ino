@@ -315,7 +315,7 @@ void MesuresTotales(){
   Serial.println("Température du thermocouple (°C) = " + String(tcTemperatureC));
   Serial.println("Humidité du DHT22 (%) = " + String(dhtHumidite));
   Serial.println("Température du DHT22 (%) = " + String(dhtTemperatureC));
-  Serial.println("Distance captée (cm) = " + String(vlDistanceMM));
+  Serial.println("Distance captée (mm) = " + String(vlDistanceMM));
   Serial.println("Date : " + String(getDateRTC())); 
   Serial.println("Temps : " + String(getTimeRTC()));
   Serial.println("Tension : " + String(Vin)); 
@@ -416,7 +416,7 @@ void VIN() {
 void distanceMM() {
   unsigned long temps = millis();
   //if(temps - vlComptpeurMM >= 5000){
-    Serial.println(String ("Distance (cm) = ") + String(vlDistanceMM) + String(" cm\n"));    
+    Serial.println(String ("Distance (mm) = ") + String(vlDistanceMM) + String(" mm\n"));    
     //vlComptpeurMM = temps;
     delay(5000); 
   //}
@@ -559,7 +559,7 @@ void envoieVin() {
 
 void envoieDistance() {
   tb.sendTelemetryFloat("Distance VL53L1X", vlDistanceMM);  
-  Serial.println(String ("Distance (cm) = ") + String(vlDistanceMM) + String(" cm\n"));
+  Serial.println(String ("Distance (mm) = ") + String(vlDistanceMM) + String(" mm\n"));
 }
 
 
