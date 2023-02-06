@@ -1,27 +1,18 @@
-/* 
-  Ce sketch est une de démonstration d'une communication point-à-point entre deux noeuds
-  à l'aide de la modulation LoRa.
-  Un premier noeud est l'ÉMETTEUR (SENDER) et l'autre est le RÉCEPTEUR (RECEIVER).
-  La communication ne se réalise que dans 1 sens, il n'y a pas de confirmation de livraison.
-  Ce sketch sert aussi à valider le bon fonctionnement et la flexibilité de la librairie Arduino-LoRa.
-  Ce sketch sert aussi à démontrer le bon fonctionnement du matériel en main, soient
-    - ÉMETTEUR: module PMOD RFM95, dont le breakout est de Richer Milette.
-    - RÉCEPTEUR: un module Heltec LoRa 32 (V2): https://heltec.org/project/wifi-lora-32/
-  
-  Librairie: Librairies Arduino-Lora: https://github.com/sandeepmistry/arduino-LoRa
-  *** Le code ci-présent est pour -- SENDER/TRANSMETTEUR -- ESP32-WROOM (DOIT) ***
-  *** fait pour fonctionner avec le code Demo_HeltecLora32V2_Lora-Receiver.ino **
-  Développements à poursuivre:
-    - Impliquer une retransmission Wifi qui reprend et valide la trame et l'envoie à un service comme Thingsboard
-    - Implémenter une transmission point-à-multipoint, à l'aide de l'information dans la trame. Consulter le code exemple https://github.com/sandeepmistry/arduino-LoRa/blob/master/examples/LoRaDuplex/LoRaDuplex.ino
-    - Faire des essais du TxPower (via la méthode setTxPower)
-    - Comprendre l'effet des paramètres: enableInvertIQ, setGain, setPreambleLength  (et voir si applicables/avantageux)
-    - Comprendre et implémenter l'utilisation de idle() et sleep() dans un contexte de deep_sleep du ESP32
-    - Comprendre et expérimenter l'interruption utilisant onReceive() et de la broche dio0
-    - Développer des essais/familiarisation d'un mode meshed (consulter: https://www.hackster.io/davidefa/esp32-lora-mesh-1-the-basics-3a0920)
- * Crédits d'inspiration:
-     https://randomnerdtutorials.com/esp32-lora-rfm95-transceiver-arduino-ide/
-     
+
+/*  --- Entête principale -- information sur le programme
+ *   
+ *  Programme:        test_LoRa_sender_mesures
+ *  Date:             6 février 2023
+ *  Auteur:           équipe station météo - CAL TGP
+ *  Pltform matériel: ESP32 DOIT KIT V1 - protoTPhys
+ *  Pltform develop : Arduino 2.0.3/1.8.19
+ *  Description:      Ce logiciel est celui du sender LoRa pour envoyer des données au gateway de la station météo.
+ *  Fonctionnalités:  (fonctionnalités principales)
+ *  Notes:
+ *    
+ *  -- Inspirations et credits: --
+ *   Yh - Fév 2023
+ *
 */
 
 #include <SPI.h>
@@ -76,10 +67,11 @@ typedef union
     int16_t  dhtTemperatureC;  //                                (2 bytes)   * 100
     int16_t  tcTemperatureC;   //                                (2 bytes)   * 100
     uint16_t bmpPressionHPa;   //                                (2 bytes)
-    uint8_t  dhtHumidite;       //                                (1 byte)
-    uint16_t vlDistanceMM;      //                                (2 bytes)
+    uint8_t  dhtHumidite;      //                                (1 byte)
+    uint16_t vlDistanceMM;     //                                (2 bytes)
     uint16_t gy49LuminositeLux;//                                (2 bytes)
-    uint8_t   Vin;              //                                (1 byte)
+    int16_t  bmpAltitude;       //                                (2 bytes)
+    uint8_t  Vin;              //                                (1 byte) * 100
     int32_t  latitudeGPS;      //                                (4 byte)
     int32_t  longitudeGPS;     //                                (4 byte)
     int32_t  altitudeGPS;      //                                (4 byte)
@@ -88,8 +80,8 @@ typedef union
     uint16_t transmitDuration; // Previous transmission duration (2 bytes)
     uint8_t  transmitStatus;   // Iridium return code            (1 byte)
     uint16_t iterationCounter; // Message counter                (2 bytes)
-  } __attribute__((packed));                            // Total: (38 bytes)
-  uint8_t bytes[38];
+  } __attribute__((packed));                            // Total: (40 bytes)
+  uint8_t bytes[40];
 } SBD_MO_MESSAGE;
 
 SBD_MO_MESSAGE moSbdMessage;
@@ -104,7 +96,8 @@ void fillInDummyData(void) {
   moSbdMessage.dhtHumidite = dhtHumi();
   moSbdMessage.vlDistanceMM = distanceVL();
   moSbdMessage.gy49LuminositeLux = gyLux();
-  moSbdMessage.Vin = lecture_VinExt() * 10;
+  moSbdMessage.bmpAltitude = bmpAltitude();
+  moSbdMessage.Vin = lecture_VinExt() * 100;
   moSbdMessage.latitudeGPS = 5;
   moSbdMessage.longitudeGPS = 22;
   moSbdMessage.altitudeGPS = 332;
@@ -197,8 +190,9 @@ void loop() {
   Serial.println("Pression (hPa) = " + String(moSbdMessage.bmpPressionHPa));
   Serial.println("Température du DHT22 (%) = " + String( moSbdMessage.dhtHumidite));
   Serial.println("Distance du VL53L1X (mm) : " + String(moSbdMessage.vlDistanceMM)); 
-  Serial.println("Tension du Vin (V) : " + String(moSbdMessage.Vin));
   Serial.println("Luminosité (lux) : " + String(moSbdMessage.gy49LuminositeLux));
+  Serial.println("Altitude : " + String(moSbdMessage.bmpAltitude));
+  Serial.println("Tension du Vin (V) : " + String(moSbdMessage.Vin));
   Serial.println("transmitDuration = " + String(moSbdMessage.transmitDuration));
   Serial.println("transmitStatus = " + String(moSbdMessage.transmitStatus));
   Serial.println("iterationCounter = " + String(moSbdMessage.iterationCounter) + "\n");
