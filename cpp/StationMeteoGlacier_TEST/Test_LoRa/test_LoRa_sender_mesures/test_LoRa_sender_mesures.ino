@@ -26,6 +26,13 @@
 
 #include <SPI.h>
 #include <LoRa.h>
+#include "pmodTC.h"
+#include "bmpLib.h"
+#include "VLlibrary.h"
+#include "FonctionsGY49.h"
+#include "librairiesDHT.h"
+#include <TinyGPS++.h>
+#include "VinLibrary.h"
 
 #define _VERSION "2.1.7"
 
@@ -49,6 +56,13 @@ const uint8_t LoRaCR = 5;
 
 const int PIN_POW_EN = 13; //Pin pour le 3V3
 
+//Mode deep sleep
+unsigned long timeSleep = 10;  //--> Durée du Deep Sleep (sec)
+unsigned long micInSec = 1000000; //--> Facteur de conversion de microsec en sec pour le Deep Sleep
+unsigned long totSleep = timeSleep * micInSec; //--> Durée total du Deep Sleep en microsecondes.
+unsigned long pre_millis = 0; //--> Initialisation de la variable utiliser pour le delay sans arrêt <No_Stop_Delay (NSD)>
+unsigned long trigger_NSD = 5000; //--> Trigger pour indiquer au delay sans arrêt qui est temps d'effectuer une action. <No_Stop_Delay (NSD)>
+
 //Structure de donnée à transmettre -- ici un test, à modifier selon le besoin.
 // Le récepteur doit avoir exactement la même définition de son côté (code)
 typedef union
@@ -57,23 +71,25 @@ typedef union
   {
     // Ajouter destinataire et source: uint8_t chacun
     // Ajouter la version de la source: uint8_t
-    uint32_t  unixtime;         // UNIX Epoch time                (4 bytes)
-    int16_t   temperatureInt;   // Internal temperature (°C)      (2 bytes)   * 100
-    uint16_t  humidityInt;      // Internal humidity (%)          (2 bytes)   * 100
-    uint16_t  pressureInt;      // Internal pressure (hPa)        (2 bytes)   - 850 * 100
-    int16_t   pitch;            // Pitch (°)                      (2 bytes)   * 100
-    int16_t   roll;             // Roll (°)                       (2 bytes)   * 100
-    uint16_t  heading;          // Heading (°)                    (2 bytes)
-    int32_t   latitude;         // Latitude (DD)                  (4 bytes)   * 1000000
-    int32_t   longitude;        // Longitude (DD)                 (4 bytes)   * 1000000
-    uint8_t   satellites;       // # of satellites                (1 byte)
-    uint16_t  hdop;             // HDOP                           (2 bytes)
-    uint16_t  voltage;          // Battery voltage (V)            (2 bytes)   * 100
-    uint16_t  transmitDuration; // Previous transmission duration (2 bytes)
-    uint8_t   transmitStatus;   // Iridium return code            (1 byte)
-    uint16_t  iterationCounter; // Message counter                (2 bytes)
-  } __attribute__((packed));                            // Total: (34 bytes)
-  uint8_t bytes[34];
+    uint32_t unixtime;         //                                (4 bytes)    
+    int16_t  bmpTemperatureC;  //                                (2 bytes)   * 100           
+    int16_t  dhtTemperatureC;  //                                (2 bytes)   * 100
+    int16_t  tcTemperatureC;   //                                (2 bytes)   * 100
+    uint16_t bmpPressionHPa;   //                                (2 bytes)
+    uint8_t  dhtHumidite;       //                                (1 byte)
+    uint16_t vlDistanceMM;      //                                (2 bytes)
+    uint16_t gy49LuminositeLux;//                                (2 bytes)
+    uint8_t   Vin;              //                                (1 byte)
+    int32_t  latitudeGPS;      //                                (4 byte)
+    int32_t  longitudeGPS;     //                                (4 byte)
+    int32_t  altitudeGPS;      //                                (4 byte)
+    uint8_t  satellites;       // # of satellites                (1 byte)
+    uint16_t hdop;             // HDOP                           (2 bytes)
+    uint16_t transmitDuration; // Previous transmission duration (2 bytes)
+    uint8_t  transmitStatus;   // Iridium return code            (1 byte)
+    uint16_t iterationCounter; // Message counter                (2 bytes)
+  } __attribute__((packed));                            // Total: (38 bytes)
+  uint8_t bytes[38];
 } SBD_MO_MESSAGE;
 
 SBD_MO_MESSAGE moSbdMessage;
@@ -81,21 +97,26 @@ SBD_MO_MESSAGE moSbdMessage;
 //Simple fonction pour assigner du data dans la structure
 void fillInDummyData(void) {
   moSbdMessage.unixtime = 123456789;
-  moSbdMessage.temperatureInt = -1020;
-  moSbdMessage.humidityInt = 2000;
-  moSbdMessage.pressureInt = 15000;
-  moSbdMessage.pitch = -200;
-  moSbdMessage.roll = 150;
-  moSbdMessage.heading = 32;
-  moSbdMessage.latitude = 4298745;
-  moSbdMessage.longitude = -7312356;
-  moSbdMessage.satellites = 5;
-  moSbdMessage.hdop = 22;
-  moSbdMessage.voltage = 332;
-  moSbdMessage.transmitDuration = millis();
-  moSbdMessage.transmitStatus = 5;
-  moSbdMessage.iterationCounter = 0;
+  moSbdMessage.bmpTemperatureC = bmpTemp() * 100;
+  moSbdMessage.dhtTemperatureC = dhtTemp() * 100;
+  moSbdMessage.tcTemperatureC = tempTC() * 100;
+  moSbdMessage.bmpPressionHPa = bmpPression();
+  moSbdMessage.dhtHumidite = dhtHumi();
+  moSbdMessage.vlDistanceMM = distanceVL();
+  moSbdMessage.gy49LuminositeLux = gyLux();
+  moSbdMessage.Vin = lecture_VinExt() * 10;
+  moSbdMessage.latitudeGPS = 5;
+  moSbdMessage.longitudeGPS = 22;
+  moSbdMessage.altitudeGPS = 332;
+  moSbdMessage.satellites = 56;
+  moSbdMessage.hdop = 5;
+  moSbdMessage.transmitDuration;
+  moSbdMessage.transmitStatus;
+  moSbdMessage.iterationCounter;
 }
+
+RTC_DATA_ATTR uint16_t iterationRTC;
+
 
 void setup() {
   //initialize Serial Monitor
@@ -104,6 +125,16 @@ void setup() {
   pinMode(PIN_POW_EN, OUTPUT);
   digitalWrite(PIN_POW_EN, HIGH);
   delay (500);
+ 
+  //Initialise le BMP388
+  BMP3XX_init();
+  //Initialise le DHT22
+  init_Humidite_DHT();
+  //Initialise le VL53L1X
+  init_VL();
+  //Permet de détecter la tension d'entrée Vin du système
+  init_VinExt();
+    
   Serial.println("LoRa Sender");
 
   //setup LoRa transceiver module
@@ -155,8 +186,28 @@ void loop() {
   uint32_t endTime = micros();
 
   moSbdMessage.unixtime = millis();
-  moSbdMessage.iterationCounter++;
+  iterationRTC++;
+  moSbdMessage.iterationCounter = iterationRTC;
   moSbdMessage.transmitDuration = endTime-startTime;
 
-  delay(1000);
+  Serial.println("\nTempérature du BMP388 (°C) = " + String(moSbdMessage.bmpTemperatureC));
+  Serial.println("Température du dht (°C) = " + String(moSbdMessage.dhtTemperatureC));
+  Serial.println("Température du thermocouple (°C) = " + String(moSbdMessage.tcTemperatureC));
+  Serial.println("Pression (hPa) = " + String(moSbdMessage.bmpPressionHPa));
+  Serial.println("Température du DHT22 (%) = " + String( moSbdMessage.dhtHumidite));
+  Serial.println("Distance du VL53L1X (mm) : " + String(moSbdMessage.vlDistanceMM)); 
+  Serial.println("Tension du Vin (V) : " + String(moSbdMessage.Vin));
+  Serial.println("Luminosité (lux) : " + String(moSbdMessage.gy49LuminositeLux));
+  Serial.println("transmitDuration = " + String(moSbdMessage.transmitDuration));
+  Serial.println("transmitStatus = " + String(moSbdMessage.transmitStatus));
+  Serial.println("iterationCounter = " + String(moSbdMessage.iterationCounter) + "\n");
+
+  delay(2000);
+  esp_deep_sleep(totSleep); //--> Entre en mode deep sleep pour une durée de x microsecondes
+  //unsigned long cur_millis = millis();
+  //pre_millis = cur_millis;  //--> ajustement inutile puisque le code se recompile (à voir)
+  //if(cur_millis - pre_millis >= trigger_NSD){ //--> Condition que le trigger_NSD est respecter en rapport avec la différence des millis actuel et de l'ancienne boucle.
+      //esp_deep_sleep(totSleep); //--> Entre en mode deep sleep pour une durée de x microsecondes
+      //pre_millis = cur_millis;
+ // }  
 }
