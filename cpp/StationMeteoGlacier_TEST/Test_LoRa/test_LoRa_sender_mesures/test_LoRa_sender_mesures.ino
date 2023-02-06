@@ -116,8 +116,8 @@ void fillInDummyData(void) {
 }
 
 RTC_DATA_ATTR uint16_t iterationRTC;
-
-
+RTC_DATA_ATTR uint16_t DurationRTC;
+ 
 void setup() {
   //initialize Serial Monitor
   Serial.begin(115200);
@@ -178,17 +178,18 @@ void loop() {
   Serial.print("  of len=");
   Serial.println(sizeof(moSbdMessage));
 
+  moSbdMessage.unixtime = millis();
+  iterationRTC++;
+  moSbdMessage.iterationCounter = iterationRTC;
+  moSbdMessage.transmitDuration = DurationRTC;
+
   //Send LoRa packet to receiver
   uint32_t startTime = micros();  //Pour mesurer approx le temps de transmission
   LoRa.beginPacket();
   LoRa.write(moSbdMessage.bytes, sizeof(moSbdMessage));  //Clef pour la transmission "binaire"
   LoRa.endPacket();
   uint32_t endTime = micros();
-
-  moSbdMessage.unixtime = millis();
-  iterationRTC++;
-  moSbdMessage.iterationCounter = iterationRTC;
-  moSbdMessage.transmitDuration = endTime-startTime;
+  DurationRTC = endTime-startTime;
 
   Serial.println("\nTempérature du BMP388 (°C) = " + String(moSbdMessage.bmpTemperatureC));
   Serial.println("Température du dht (°C) = " + String(moSbdMessage.dhtTemperatureC));
