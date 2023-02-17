@@ -1,16 +1,23 @@
 /******************************************************************
    Nom: StationMeteoMain_2V0.ino
    Créer par: Thomas Perras
-   Description: Programme de la Station Meteo Glacier conçu pour communiquer avec le LoRa pour envoyer des données à un gateway.
-                
-
+   Description: Programme de la Station Meteo Glacier conçu pour communiquer avec le LoRa pour envoyer des données à un gateway.           
+   
 ******************************************************************/
+
+/* --- HISTORIQUE de développement --------------------------------------
+   --v1.0.0: Programmation pour la sortie à Yamaska
+   --v2.0.0: Programmation pour la communication avec le LoRa
+   --v2.1.0: Inclusion de la fonction pour la girouette
+
+*/
+//-----------------------------------------------------------------------
 
 #include "StationMeteoMain_2V0.h"//--> Librairie du fichier main.
 #include "VLlibrary.h"
 #include <LoRa.h>
 
-#define _VERSION "3.0.0"
+#define _VERSION "2.0.0"
 //Paramètre de communication ESP32 et module RFM95:
 #define ss 16
 // Note pour ces broches:
@@ -38,7 +45,11 @@ unsigned long totSleep = timeSleep * micInSec; //--> Durée total du Deep Sleep 
 unsigned long pre_millis = 0; //--> Initialisation de la variable utiliser pour le delay sans arrêt <No_Stop_Delay (NSD)>
 unsigned long trigger_NSD = 1000; //--> Trigger pour indiquer au delay sans arrêt qui est temps d'effectuer une action. <No_Stop_Delay (NSD)>
 
-const int PIN_POW_EN = 13; //Pin pour le 3V3
+//Valeurs pour la girouette
+unsigned long derniereMESURECAPTEURS = millis();
+unsigned long derniereEnvoieMESURECAPTEURS = millis();
+int delai_capteur_lecture = 250;
+int delai = 0;
 
 //Structure de donnée à transmettre -- ici un test, à modifier selon le besoin.
 // Le récepteur doit avoir exactement la même définition de son côté (code)
@@ -56,7 +67,8 @@ typedef union
     uint8_t  dhtHumidite;      //                                (1 byte)
     uint16_t vlDistanceMM;     //                                (2 bytes)
     uint16_t gy49LuminositeLux;//                                (2 bytes)
-    int16_t  bmpAltitude;       //                                (2 bytes)
+    int16_t  bmpAltitude;      //                                (2 bytes)
+    uint16_t valpot;           //                                (2 bytes)
     uint8_t  Vin;              //                                (1 byte) * 100
     int32_t  latitudeGPS;      //                                (4 byte)
     int32_t  longitudeGPS;     //                                (4 byte)
@@ -66,8 +78,8 @@ typedef union
     uint16_t transmitDuration; // Previous transmission duration (2 bytes)
     uint8_t  transmitStatus;   // Iridium return code            (1 byte)
     uint16_t iterationCounter; // Message counter                (2 bytes)
-  } __attribute__((packed));                            // Total: (40 bytes)
-  uint8_t bytes[40];
+  } __attribute__((packed));                           // Total: (42 bytes)
+  uint8_t bytes[42];
 } SBD_MO_MESSAGE;
 
 SBD_MO_MESSAGE moSbdMessage;
@@ -83,6 +95,7 @@ void fillInDummyData(void) {
   moSbdMessage.vlDistanceMM = distanceVL();
   moSbdMessage.gy49LuminositeLux = gyLux();
   moSbdMessage.bmpAltitude = bmpAltitude();
+  moSbdMessage.valpot = girouette();
   moSbdMessage.Vin = lecture_VinExt() * 100;
   moSbdMessage.latitudeGPS = 5;
   moSbdMessage.longitudeGPS = 22;
@@ -141,10 +154,10 @@ void setup() {
   Serial.print("BW=");
   Serial.println(LoRa.getSignalBandwidth());
 
-  fillInDummyData();
 }
 
 void loop() {
+  fillInDummyData();
   Serial.print("Sending packet: ");
   Serial.print(moSbdMessage.iterationCounter);
   Serial.print("  of len=");
@@ -171,6 +184,7 @@ void loop() {
   Serial.println("Distance du VL53L1X (mm) : " + String(moSbdMessage.vlDistanceMM)); 
   Serial.println("Luminosité (lux) : " + String(moSbdMessage.gy49LuminositeLux));
   Serial.println("Altitude : " + String(moSbdMessage.bmpAltitude));
+  Serial.println("sortie analogique de la girouette = " + String(moSbdMessage.valpot));
   Serial.println("Tension du Vin (V) : " + String(moSbdMessage.Vin));
   Serial.println("transmitDuration = " + String(moSbdMessage.transmitDuration));
   Serial.println("transmitStatus = " + String(moSbdMessage.transmitStatus));
