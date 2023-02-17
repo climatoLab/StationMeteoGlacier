@@ -3,32 +3,32 @@ uint16_t girouette(){
   if (millis() - derniereMESURECAPTEURS > delai_capteur_lecture) {
     derniereMESURECAPTEURS = millis();
 
-    moSbdMessage.valPot = analogRead(34);
-    roseDESvents(moSbdMessage.valPot);
+    moSbdMessage.GirValPot = analogRead(34);
+    roseDESvents(moSbdMessage.GirValPot);
   }  
-  return moSbdMessage.valPot;
+  return moSbdMessage.GirValPot;
 }
 
 
-void roseDESvents(int valPot) {
+void roseDESvents(int GirValPot) {
 
  static uint16_t angle = 0;
-  if (valPot <= 715) angle = 113;       //EST SUD EST (ESE)
-  else if (valPot <= 754) angle = 68;   //EST NORD EST (ENE)
-  else if (valPot<= 814) angle = 90;   //EST (E)
-  else if (valPot <= 950) angle = 158;  //SUD SUD EST (SSE) 
-  else if (valPot <= 1123) angle = 135;  //SUD EST (SE) 
-  else if (valPot <= 1271) angle = 203;  //SUD SUD OUEST (SSO) 
-  else if (valPot<= 1522) angle = 180;  //SUD (S) 
-  else if (valPot <= 1794) angle = 23;   //NORD NORD EST (NNE)
-  else if (valPot<= 2106 ) angle = 45;   //NORD EST (NE) 
-  else if (valPot <= 2384) angle = 248;  //OUEST SUD OUEST (OSO)
-  else if (valPot <= 2563) angle = 225;  //SUD OUEST (SO)
-  else if (valPot <= 2863) angle = 338;  //NORD NORD OUEST (NNO)
-  else if (valPot <= 3094) angle = 0;    //NORD (N)
-  else if (valPot <= 3331) angle = 293;  //OUEST NORD OUEST (ONO)
-  else if (valPot <= 3664) angle = 315;  //NORD OUEST (NO)
-  else if (valPot <= 3972) angle = 270;  //OUEST (0)
+  if (GirValPot <= 715) angle = 113;       //EST SUD EST (ESE)
+  else if (GirValPot <= 754) angle = 68;   //EST NORD EST (ENE)
+  else if (GirValPot<= 814) angle = 90;   //EST (E)
+  else if (GirValPot <= 950) angle = 158;  //SUD SUD EST (SSE) 
+  else if (GirValPot <= 1123) angle = 135;  //SUD EST (SE) 
+  else if (GirValPot <= 1271) angle = 203;  //SUD SUD OUEST (SSO) 
+  else if (GirValPot<= 1522) angle = 180;  //SUD (S) 
+  else if (GirValPot <= 1794) angle = 23;   //NORD NORD EST (NNE)
+  else if (GirValPot<= 2106 ) angle = 45;   //NORD EST (NE) 
+  else if (GirValPot <= 2384) angle = 248;  //OUEST SUD OUEST (OSO)
+  else if (GirValPot <= 2563) angle = 225;  //SUD OUEST (SO)
+  else if (GirValPot <= 2863) angle = 338;  //NORD NORD OUEST (NNO)
+  else if (GirValPot <= 3094) angle = 0;    //NORD (N)
+  else if (GirValPot <= 3331) angle = 293;  //OUEST NORD OUEST (ONO)
+  else if (GirValPot <= 3664) angle = 315;  //NORD OUEST (NO)
+  else if (GirValPot <= 3972) angle = 270;  //OUEST (0)
   else angle = 0;
 //  ptr->angleVent = angle;
 
@@ -64,25 +64,25 @@ void roseDESvents(int valPot) {
 //Serial.println(String(dirVent) + "\n");
 /*
   
-  if (valPot >= 1550 && valPot < 2550) {
+  if (GirValPot >= 1550 && GirValPot < 2550) {
     Serial.println("NE");
   }
-  else if (valPot >= 2550 && valPot < 3050) {
+  else if (GirValPot >= 2550 && GirValPot < 3050) {
     Serial.println("E");
   }
-  else if (valPot >= 3050 && valPot < 3320) {
+  else if (GirValPot >= 3050 && GirValPot < 3320) {
     Serial.println("SE");
   }
-  else if (valPot >= 3320 && valPot < 3495) {
+  else if (GirValPot >= 3320 && GirValPot < 3495) {
     Serial.println("S");
   }
-  else if (valPot >= 3495 && valPot < 3605) {
+  else if (GirValPot >= 3495 && GirValPot < 3605) {
     Serial.println("SO");
   }
-  else if (valPot >= 3605 && valPot < 3700) {
+  else if (GirValPot >= 3605 && GirValPot < 3700) {
     Serial.println("O");
   }
-  else if (valPot >= 3700 && valPot < 3760) {
+  else if (GirValPot >= 3700 && GirValPot < 3760) {
     Serial.println("NO");
   }
   else {
@@ -115,18 +115,18 @@ uint16_t anemometre(){
   /*if (rps == inf) {
     rps = 0;
     }*/
-  //moSbdMessage.vitesseVent = rps * 3.66;
+  //moSbdMessage.AnemomVitesseVent = rps * 3.66;
 
-  moSbdMessage.vitesseVent = rps * 2.4;
+  moSbdMessage.AnemomVitesseVent = rps * 2.4;
   //if (millis()-timerDisplay > delayDisplay) {
   if (rps != lastrps) {
     lastrps = rps;
-    //Serial.println(moSbdMessage.vitesseVent);
+    //Serial.println(moSbdMessage.AnemomVitesseVent);
     //timerDisplay = millis();
   }
-  return moSbdMessage.vitesseVent;
+  return moSbdMessage.AnemomVitesseVent;
   //Serial.print(Rotations); Serial.print("\t\t");
-  //Serial.println(moSbdMessage.vitesseVent);  
+  //Serial.println(moSbdMessage.AnemomVitesseVent);  
 }
 
 

@@ -10,6 +10,7 @@
     //*** v2.0.0 : Programmation pour la communication avec le LoRa
     //*** v2.1.0 : Inclusion de la fonction pour la girouette
     //*** v2.2.0 : Inclusion de la fonction pour l'anémomètre
+    //*** v2.2.1 : Changement de nom pour les variables de la girouette et de l'anémomètre
 */
 //-----------------------------------------------------------------------
 
@@ -23,7 +24,7 @@
 
 
 //--- Definitions -------------------------------------------------------
-#define Version "2.2.0"
+#define Version "2.2.1"
 //Paramètre de communication ESP32 et module RFM95:
 #define ss 16
 // Note pour ces broches:
@@ -93,9 +94,9 @@ typedef union
     uint16_t vlDistanceMM;     //                                (2 bytes)
     uint16_t gy49LuminositeLux;//                                (2 bytes)
     int16_t  bmpAltitude;      //                                (2 bytes)
-    uint16_t valPot;           //                                (2 bytes)
-    uint16_t vitesseVent;      //                                (2 bytes)
-    uint16_t  Vin;              //                               (2 byte) * 100
+    uint16_t GirValPot;        //                                (2 bytes)
+    uint16_t AnemomVitesseVent;//                                (2 bytes)
+    uint16_t Vin;              //                                (2 byte) * 100
     int32_t  latitudeGPS;      //                                (4 byte)
     int32_t  longitudeGPS;     //                                (4 byte)
     int32_t  altitudeGPS;      //                                (4 byte)
@@ -105,13 +106,13 @@ typedef union
     uint8_t  transmitStatus;   // Iridium return code            (1 byte)
     uint16_t iterationCounter; // Message counter                (2 bytes)
   } __attribute__((packed));                           // Total: (45 bytes)
-  uint8_t bytes[44];
+  uint8_t bytes[45];
 } SBD_MO_MESSAGE;
 
 SBD_MO_MESSAGE moSbdMessage;
 
 //Simple fonction pour assigner du data dans la structure
-void fillInDummyData(void) {
+void fillInData(void) {
   moSbdMessage.unixtime = 123456789;
   moSbdMessage.bmpTemperatureC = bmpTemp() * 100;
   moSbdMessage.dhtTemperatureC = dhtTemp() * 100;
@@ -121,8 +122,8 @@ void fillInDummyData(void) {
   moSbdMessage.vlDistanceMM = distanceVL();
   moSbdMessage.gy49LuminositeLux = gyLux();
   moSbdMessage.bmpAltitude = bmpAltitude();
-  moSbdMessage.valPot = girouette();
-  moSbdMessage.vitesseVent = anemometre() * 100;
+  moSbdMessage.GirValPot = girouette();
+  moSbdMessage.AnemomVitesseVent = anemometre() * 100;
   moSbdMessage.Vin = lecture_VinExt() * 100;
   moSbdMessage.latitudeGPS = 5;
   moSbdMessage.longitudeGPS = 22;
@@ -194,17 +195,15 @@ void setup() {
 }
 
 void loop() {
-  fillInDummyData();
+  fillInData();
   Serial.print("Sending packet: ");
   Serial.print(moSbdMessage.iterationCounter);
   Serial.print("  of len=");
   Serial.println(sizeof(moSbdMessage));
 
   moSbdMessage.unixtime = millis();
-  iterationRTC++;
-  moSbdMessage.iterationCounter = iterationRTC;
   moSbdMessage.transmitDuration = DurationRTC;
-
+  moSbdMessage.iterationCounter = iterationRTC;
   //Send LoRa packet to receiver
   uint32_t startTime = micros();  //Pour mesurer approx le temps de transmission
   LoRa.beginPacket();
@@ -212,7 +211,7 @@ void loop() {
   LoRa.endPacket();
   uint32_t endTime = micros();
   DurationRTC = endTime-startTime;
-
+  
   Serial.println("\nTempérature du BMP388 (°C) = " + String(moSbdMessage.bmpTemperatureC));
   Serial.println("Température du dht (°C) = " + String(moSbdMessage.dhtTemperatureC));
   Serial.println("Température du thermocouple (°C) = " + String(moSbdMessage.tcTemperatureC));
@@ -221,14 +220,15 @@ void loop() {
   Serial.println("Distance du VL53L1X (mm) : " + String(moSbdMessage.vlDistanceMM)); 
   Serial.println("Luminosité (lux) : " + String(moSbdMessage.gy49LuminositeLux));
   Serial.println("Altitude : " + String(moSbdMessage.bmpAltitude));
-  Serial.println("Sortie analogique de la girouette = " + String(moSbdMessage.valPot));
-   Serial.println("Vitesse de vent de l'anémomètre = " + String(moSbdMessage.vitesseVent));
+  Serial.println("Sortie analogique de la girouette = " + String(moSbdMessage.GirValPot));
+   Serial.println("Vitesse de vent de l'anémomètre = " + String(moSbdMessage.AnemomVitesseVent));
   Serial.println("Tension du Vin (V) : " + String(moSbdMessage.Vin));
   Serial.println("TransmitDuration = " + String(moSbdMessage.transmitDuration));
   Serial.println("TransmitStatus = " + String(moSbdMessage.transmitStatus));
   Serial.println("IterationCounter = " + String(moSbdMessage.iterationCounter) + "\n");  
   unsigned long cur_millis = millis(); //--> indique la valeur actuel des millis() 
-  
+
+  iterationRTC++;
   //if(cur_millis - pre_millis >= trigger_NSD){ //--> Condition que le trigger_NSD est respecter en rapport avec la différence des millis actuel et de l'ancienne boucle.
     //pre_millis = cur_millis;  //--> ajustement inutile puisque le code se recompile (à voir)
     esp_deep_sleep(totSleep); //--> Entre en mode deep sleep pour une durée de x microsecondes
