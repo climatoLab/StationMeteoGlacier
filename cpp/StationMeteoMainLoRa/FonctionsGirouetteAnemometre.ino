@@ -3,50 +3,36 @@ uint16_t girouette(){
   if (millis() - derniereMESURECAPTEURS > delai_capteur_lecture) {
     derniereMESURECAPTEURS = millis();
 
-    moSbdMessage.valpot = analogRead(34);
-    roseDESvents(moSbdMessage.valpot);
+    moSbdMessage.valPot = analogRead(34);
+    roseDESvents(moSbdMessage.valPot);
   }  
-  return moSbdMessage.valpot;
+  return moSbdMessage.valPot;
 }
 
-/*void envoieGirouette(){
-  if (millis() - derniereEnvoieMESURECAPTEURS > delai_capteur_lecture) {
-    derniereEnvoieMESURECAPTEURS = millis();
 
-    valpot = analogRead(34);
-    Serial.print("sortie analogique de la girouette = ");
-    Pcardinaux = valpot;
-    Serial.println(Pcardinaux);
-
-    roseDESvents(valpot);
-    //tb.sendTelemetryFloat("Val potentiomètre", valpot);
-    tb.sendTelemetryFloat("Direction", Pcardinaux);
-  }  
-}*/
-
-void roseDESvents(int valpot) {
+void roseDESvents(int valPot) {
 
  static uint16_t angle = 0;
-  if (valpot <= 715) angle = 113;       //EST SUD EST (ESE)
-  else if (valpot <= 754) angle = 68;   //EST NORD EST (ENE)
-  else if (valpot<= 814) angle = 90;   //EST (E)
-  else if (valpot <= 950) angle = 158;  //SUD SUD EST (SSE) 
-  else if (valpot <= 1123) angle = 135;  //SUD EST (SE) 
-  else if (valpot <= 1271) angle = 203;  //SUD SUD OUEST (SSO) 
-  else if (valpot<= 1522) angle = 180;  //SUD (S) 
-  else if (valpot <= 1794) angle = 23;   //NORD NORD EST (NNE)
-  else if (valpot<= 2106 ) angle = 45;   //NORD EST (NE) 
-  else if (valpot <= 2384) angle = 248;  //OUEST SUD OUEST (OSO)
-  else if (valpot <= 2563) angle = 225;  //SUD OUEST (SO)
-  else if (valpot <= 2863) angle = 338;  //NORD NORD OUEST (NNO)
-  else if (valpot <= 3094) angle = 0;    //NORD (N)
-  else if (valpot <= 3331) angle = 293;  //OUEST NORD OUEST (ONO)
-  else if (valpot <= 3664) angle = 315;  //NORD OUEST (NO)
-  else if (valpot <= 3972) angle = 270;  //OUEST (0)
+  if (valPot <= 715) angle = 113;       //EST SUD EST (ESE)
+  else if (valPot <= 754) angle = 68;   //EST NORD EST (ENE)
+  else if (valPot<= 814) angle = 90;   //EST (E)
+  else if (valPot <= 950) angle = 158;  //SUD SUD EST (SSE) 
+  else if (valPot <= 1123) angle = 135;  //SUD EST (SE) 
+  else if (valPot <= 1271) angle = 203;  //SUD SUD OUEST (SSO) 
+  else if (valPot<= 1522) angle = 180;  //SUD (S) 
+  else if (valPot <= 1794) angle = 23;   //NORD NORD EST (NNE)
+  else if (valPot<= 2106 ) angle = 45;   //NORD EST (NE) 
+  else if (valPot <= 2384) angle = 248;  //OUEST SUD OUEST (OSO)
+  else if (valPot <= 2563) angle = 225;  //SUD OUEST (SO)
+  else if (valPot <= 2863) angle = 338;  //NORD NORD OUEST (NNO)
+  else if (valPot <= 3094) angle = 0;    //NORD (N)
+  else if (valPot <= 3331) angle = 293;  //OUEST NORD OUEST (ONO)
+  else if (valPot <= 3664) angle = 315;  //NORD OUEST (NO)
+  else if (valPot <= 3972) angle = 270;  //OUEST (0)
   else angle = 0;
 //  ptr->angleVent = angle;
 
-  String dirVent;
+/*  String dirVent;
   if(angle == 338 || angle == 0)  dirVent = "NORD";
   else if(angle == 23 || angle == 45)   dirVent = "NORD-EST";
   else if(angle == 68 || angle == 90)   dirVent = "EST";
@@ -74,33 +60,80 @@ void roseDESvents(int valpot) {
 //  else if(angle == 315) dirVent = "NORD-OUEST";
 //  else if(angle == 338) dirVent = "NNO";      
 //  else  dirVent = "N";
-
-Serial.println(String(dirVent) + "\n");
+*/
+//Serial.println(String(dirVent) + "\n");
 /*
   
-  if (valpot >= 1550 && valpot < 2550) {
+  if (valPot >= 1550 && valPot < 2550) {
     Serial.println("NE");
   }
-  else if (valpot >= 2550 && valpot < 3050) {
+  else if (valPot >= 2550 && valPot < 3050) {
     Serial.println("E");
   }
-  else if (valpot >= 3050 && valpot < 3320) {
+  else if (valPot >= 3050 && valPot < 3320) {
     Serial.println("SE");
   }
-  else if (valpot >= 3320 && valpot < 3495) {
+  else if (valPot >= 3320 && valPot < 3495) {
     Serial.println("S");
   }
-  else if (valpot >= 3495 && valpot < 3605) {
+  else if (valPot >= 3495 && valPot < 3605) {
     Serial.println("SO");
   }
-  else if (valpot >= 3605 && valpot < 3700) {
+  else if (valPot >= 3605 && valPot < 3700) {
     Serial.println("O");
   }
-  else if (valpot >= 3700 && valpot < 3760) {
+  else if (valPot >= 3700 && valPot < 3760) {
     Serial.println("NO");
   }
   else {
     Serial.println("N");
   }
 */
+}
+
+
+//Anémomètre/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+uint16_t anemometre(){
+  //Rotations = 0; // Set Rotations count to 0 ready for calculations
+
+  // sei(); // Enables interrupts
+  // delay (3000); // Wait 3 seconds to average
+  // cli(); // Disable interrupts
+
+  // convert to mp/h using the formula V=P(2.25/t)
+  // V = P(2.25/3) = P * 0.75
+  if (flagISR) {
+    rps = 1000. / deltaTime;
+    flagISR = false;
+  }
+  if (millis() - lastInterrupt > 5000)
+  {
+    rps = 0.00;
+  }
+
+  /*if (rps == inf) {
+    rps = 0;
+    }*/
+  //moSbdMessage.vitesseVent = rps * 3.66;
+
+  moSbdMessage.vitesseVent = rps * 2.4;
+  //if (millis()-timerDisplay > delayDisplay) {
+  if (rps != lastrps) {
+    lastrps = rps;
+    //Serial.println(moSbdMessage.vitesseVent);
+    //timerDisplay = millis();
+  }
+  return moSbdMessage.vitesseVent;
+  //Serial.print(Rotations); Serial.print("\t\t");
+  //Serial.println(moSbdMessage.vitesseVent);  
+}
+
+
+// This is the function that the interrupt calls to increment the rotation count
+void isr_rotation () {
+  deltaTime = millis() - lastInterrupt;
+  lastInterrupt = millis();
+  flagISR = true;
+  //Serial.println("Paquette");
 }
