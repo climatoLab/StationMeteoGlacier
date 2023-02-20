@@ -11,6 +11,8 @@
     //*** v2.1.0 : Inclusion de la fonction pour la girouette
     //*** v2.2.0 : Inclusion de la fonction pour l'anémomètre
     //*** v2.2.1 : Changement de nom pour les variables de la girouette et de l'anémomètre
+    //*** v2.3.1 : Ajout des données de la girouette et de l'anémomètre dans la carte micro SD ainsi que des modifications sur les noms de leur fonction
+    //*** v2.4.0 : Commentaire sur la version du code et ajustement du temps du deep sleep pour la staiton météo
 */
 //-----------------------------------------------------------------------
 
@@ -24,7 +26,7 @@
 
 
 //--- Definitions -------------------------------------------------------
-#define Version "2.2.1"
+#define Version "2.4.0"
 //Paramètre de communication ESP32 et module RFM95:
 #define ss 16
 // Note pour ces broches:
@@ -53,7 +55,7 @@ const uint32_t LoRaSB = 125E3;
 const uint8_t LoRaCR = 5;
 
 //Mode deep sleep
-unsigned long timeSleep = 10;  //--> Durée du Deep Sleep (sec)
+unsigned long timeSleep = 60;  //--> Durée du Deep Sleep (sec)
 unsigned long micInSec = 1000000; //--> Facteur de conversion de microsec en sec pour le Deep Sleep
 unsigned long totSleep = timeSleep * micInSec; //--> Durée total du Deep Sleep en microsecondes.
 unsigned long pre_millis = 0; //--> Initialisation de la variable utiliser pour le delay sans arrêt <No_Stop_Delay (NSD)>
