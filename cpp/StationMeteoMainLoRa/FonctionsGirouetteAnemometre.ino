@@ -1,5 +1,5 @@
 //Girouette/////////////////////////////////////////////////////////////////////////////////////////////////////
-uint16_t girouette(){
+uint16_t girouetteDirectionVent(){
   if (millis() - derniereMESURECAPTEURS > delai_capteur_lecture) {
     derniereMESURECAPTEURS = millis();
 
@@ -94,7 +94,7 @@ void roseDESvents(int GirValPot) {
 
 //Anémomètre/////////////////////////////////////////////////////////////////////////////////////////////////////
 
-uint16_t anemometre(){
+uint16_t anemometreVitesseVent(){
   //Rotations = 0; // Set Rotations count to 0 ready for calculations
 
   // sei(); // Enables interrupts

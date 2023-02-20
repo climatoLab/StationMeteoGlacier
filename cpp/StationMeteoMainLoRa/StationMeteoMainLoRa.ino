@@ -42,7 +42,7 @@
 //-----------------------------------------------------------------------
 
 
-//--- Variables --------------------------------------------------------
+//--- Constantes et variables --------------------------------------------------------
 //Paramètres de la communication LoRa:
 //Consulter: https://www.baranidesign.com/faq-articles/2019/4/23/lorawan-usa-frequencies-channels-and-sub-bands-for-iot-devices
 const uint32_t BAND = 902500000;   //902.3MHz, Channel 2
@@ -51,9 +51,6 @@ const uint8_t LoRasyncWord = 0x33;
 const uint8_t LoRaSF = 10;
 const uint32_t LoRaSB = 125E3;
 const uint8_t LoRaCR = 5;
-
-String path = "/Yamaska_A2022.txt"; //--> Chemin emprunter pour enregistrer les données sur la carte SD.
-String labelData = "Date, Time, Vin, bmpTemperature, bmpPression, bmpAltitude, dhtHumidite, dhtTemperature, tcTemperature, gyLuminosite\n"; //--> Première ligne enregistrer sur la carte SD, représente l'ordre des valeurs.
 
 //Mode deep sleep
 unsigned long timeSleep = 10;  //--> Durée du Deep Sleep (sec)
@@ -122,8 +119,8 @@ void fillInData(void) {
   moSbdMessage.vlDistanceMM = distanceVL();
   moSbdMessage.gy49LuminositeLux = gyLux();
   moSbdMessage.bmpAltitude = bmpAltitude();
-  moSbdMessage.GirValPot = girouette();
-  moSbdMessage.AnemomVitesseVent = anemometre() * 100;
+  moSbdMessage.GirValPot = girouetteDirectionVent();
+  moSbdMessage.AnemomVitesseVent = anemometreVitesseVent() * 100;
   moSbdMessage.Vin = lecture_VinExt() * 100;
   moSbdMessage.latitudeGPS = 5;
   moSbdMessage.longitudeGPS = 22;
@@ -137,7 +134,28 @@ void fillInData(void) {
 
 RTC_DATA_ATTR uint16_t iterationRTC;
 RTC_DATA_ATTR uint16_t DurationRTC;
+
+
+String path = "/Yamaska_A2022.txt"; //--> Chemin emprunter pour enregistrer les données sur la carte SD.
+String labelData = "Date, Time, Vin, bmpTemperature, bmpPression, bmpAltitude, dhtHumidite, dhtTemperature, tcTemperature, gyLuminosite, distanceVL, GirDirVent, AnemomVitVent\n"; //--> Première ligne enregistrer sur la carte SD, représente l'ordre des valeurs.
 //-----------------------------------------------------------------------
+
+String str_donnees(){ //--> Met dans une variable String la structure de nos données
+  String s_msg = getDateRTC() + vir
+               + getTimeRTC() + vir
+               + String(lecture_VinExt()) + vir
+               + String(bmpTemp()) + vir
+               + String(bmpPression()) + vir
+               + String(bmpAltitude()) + vir
+               + String(dhtHumi()) + vir
+               + String(dhtTemp()) + vir
+               + String(tempTC()) + vir //float(moSbdMessage.tcTemperatureC/100
+               + String(gyLux()) + vir
+               + String(distanceVL()) + vir
+               + String(girouetteDirectionVent()) + vir
+               + String(anemometreVitesseVent()) + "\n";
+return s_msg;
+}
 
 
 void setup() {
@@ -155,8 +173,6 @@ void setup() {
   //Initialise la girouette  
   pinMode(34, OUTPUT);
   digitalWrite(34, HIGH);
-  
-  sendData(str_data(), path); //--> envoi des données vers la carte SD.
 
   Serial.println("LoRa Sender");
 
@@ -196,6 +212,7 @@ void setup() {
 
 void loop() {
   fillInData();
+  sendData(str_donnees(), path); //--> envoi des données vers la carte SD.
   Serial.print("Sending packet: ");
   Serial.print(moSbdMessage.iterationCounter);
   Serial.print("  of len=");
