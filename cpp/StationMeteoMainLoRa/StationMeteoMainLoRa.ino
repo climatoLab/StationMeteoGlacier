@@ -1,3 +1,4 @@
+
 /******************************************************************
    Nom: StationMeteoMain_2V0.ino
    Créer par: Thomas Perras
@@ -12,7 +13,8 @@
     //*** v2.2.0 : Inclusion de la fonction pour l'anémomètre
     //*** v2.2.1 : Changement de nom pour les variables de la girouette et de l'anémomètre
     //*** v2.3.1 : Ajout des données de la girouette et de l'anémomètre dans la carte micro SD ainsi que des modifications sur les noms de leur fonction
-    //*** v2.4.0 : Commentaire sur la version du code et ajustement du temps du deep sleep pour la staiton météo
+    //*** v2.4.0 : Commentaire sur la version du code et ajustement du temps du deep sleep pour la station météo
+    //*** v2.5.0 : Prolongement de la mesure des données par la station météo
 */
 //-----------------------------------------------------------------------
 
@@ -26,7 +28,7 @@
 
 
 //--- Definitions -------------------------------------------------------
-#define Version "2.4.0"
+#define Version "2.5.0"
 //Paramètre de communication ESP32 et module RFM95:
 #define ss 16
 // Note pour ces broches:
@@ -110,36 +112,38 @@ typedef union
 
 SBD_MO_MESSAGE moSbdMessage;
 
-//Simple fonction pour assigner du data dans la structure
-void fillInData(void) {
-  moSbdMessage.unixtime = 123456789;
-  moSbdMessage.bmpTemperatureC = bmpTemp() * 100;
-  moSbdMessage.dhtTemperatureC = dhtTemp() * 100;
-  moSbdMessage.tcTemperatureC = tempTC() * 100;
-  moSbdMessage.bmpPressionHPa = bmpPression();
-  moSbdMessage.dhtHumidite = dhtHumi();
-  moSbdMessage.vlDistanceMM = distanceVL();
-  moSbdMessage.gy49LuminositeLux = gyLux();
-  moSbdMessage.bmpAltitude = bmpAltitude();
-  moSbdMessage.GirValPot = girouetteDirectionVent();
-  moSbdMessage.AnemomVitesseVent = anemometreVitesseVent() * 100;
-  moSbdMessage.Vin = lecture_VinExt() * 100;
-  moSbdMessage.latitudeGPS = 5;
-  moSbdMessage.longitudeGPS = 22;
-  moSbdMessage.altitudeGPS = 332;
-  moSbdMessage.satellites = 56;
-  moSbdMessage.hdop = 5;
-  moSbdMessage.transmitDuration;
-  moSbdMessage.transmitStatus;
-  moSbdMessage.iterationCounter;
-}
 
 RTC_DATA_ATTR uint16_t iterationRTC;
 RTC_DATA_ATTR uint16_t DurationRTC;
 
-
 String path = "/Yamaska_A2022.txt"; //--> Chemin emprunter pour enregistrer les données sur la carte SD.
 String labelData = "Date, Time, Vin, bmpTemperature, bmpPression, bmpAltitude, dhtHumidite, dhtTemperature, tcTemperature, gyLuminosite, distanceVL, GirDirVent, AnemomVitVent\n"; //--> Première ligne enregistrer sur la carte SD, représente l'ordre des valeurs.
+
+
+//Simple fonction pour assigner du data dans la structure
+void fillInData(void) {  
+    moSbdMessage.unixtime = 123456789;
+    moSbdMessage.bmpTemperatureC = bmpTemp() * 100;
+    moSbdMessage.dhtTemperatureC = dhtTemp() * 100;
+    moSbdMessage.tcTemperatureC = tempTC() * 100;
+    moSbdMessage.bmpPressionHPa = bmpPression();
+    moSbdMessage.dhtHumidite = dhtHumi();
+    moSbdMessage.vlDistanceMM = distanceVL();
+    moSbdMessage.gy49LuminositeLux = gyLux();
+    moSbdMessage.bmpAltitude = bmpAltitude();
+    moSbdMessage.GirValPot = girouetteDirectionVent();
+    moSbdMessage.AnemomVitesseVent = anemometreVitesseVent() * 100;
+    moSbdMessage.Vin = lecture_VinExt() * 100;
+    moSbdMessage.latitudeGPS = 5;
+    moSbdMessage.longitudeGPS = 22;
+    moSbdMessage.altitudeGPS = 332;
+    moSbdMessage.satellites = 56;
+    moSbdMessage.hdop = 5;
+    moSbdMessage.transmitDuration;
+    moSbdMessage.transmitStatus;
+    moSbdMessage.iterationCounter;
+}
+
 //-----------------------------------------------------------------------
 
 String str_donnees(){ //--> Met dans une variable String la structure de nos données
@@ -213,7 +217,10 @@ void setup() {
 }
 
 void loop() {
-  fillInData();
+  for(int i = 0; i <= 3; i++){
+    fillInData();
+    delay(1000);
+  }
   sendData(str_donnees(), path); //--> envoi des données vers la carte SD.
   Serial.print("Sending packet: ");
   Serial.print(moSbdMessage.iterationCounter);
