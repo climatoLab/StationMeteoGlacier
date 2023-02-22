@@ -1,4 +1,3 @@
-
 /******************************************************************
    Nom: StationMeteoMain_2V0.ino
    Créer par: Thomas Perras
@@ -15,6 +14,7 @@
     //*** v2.3.1 : Ajout des données de la girouette et de l'anémomètre dans la carte micro SD ainsi que des modifications sur les noms de leur fonction
     //*** v2.4.0 : Commentaire sur la version du code et ajustement du temps du deep sleep pour la station météo
     //*** v2.5.0 : Prolongement de la mesure des données par la station météo
+    //*** v2.5.1 : Réorganisation du code pour mieux capter et mieux afficher les données
 */
 //-----------------------------------------------------------------------
 
@@ -28,7 +28,7 @@
 
 
 //--- Definitions -------------------------------------------------------
-#define Version "2.5.0"
+#define Version "2.5.1"
 //Paramètre de communication ESP32 et module RFM95:
 #define ss 16
 // Note pour ces broches:
@@ -217,10 +217,7 @@ void setup() {
 }
 
 void loop() {
-  for(int i = 0; i <= 3; i++){
-    fillInData();
-    delay(1000);
-  }
+  fillInData();
   sendData(str_donnees(), path); //--> envoi des données vers la carte SD.
   Serial.print("Sending packet: ");
   Serial.print(moSbdMessage.iterationCounter);
@@ -239,15 +236,15 @@ void loop() {
   DurationRTC = endTime-startTime;
   
   Serial.println("\nTempérature du BMP388 (°C) = " + String(moSbdMessage.bmpTemperatureC));
-  Serial.println("Température du dht (°C) = " + String(moSbdMessage.dhtTemperatureC));
+  Serial.println("Température du DHT22 (°C) = " + String(moSbdMessage.dhtTemperatureC));
   Serial.println("Température du thermocouple (°C) = " + String(moSbdMessage.tcTemperatureC));
   Serial.println("Pression (hPa) = " + String(moSbdMessage.bmpPressionHPa));
-  Serial.println("Température du DHT22 (%) = " + String( moSbdMessage.dhtHumidite));
+  Serial.println("Humidité du DHT22 (%) = " + String( moSbdMessage.dhtHumidite));
   Serial.println("Distance du VL53L1X (mm) : " + String(moSbdMessage.vlDistanceMM)); 
   Serial.println("Luminosité (lux) : " + String(moSbdMessage.gy49LuminositeLux));
   Serial.println("Altitude : " + String(moSbdMessage.bmpAltitude));
   Serial.println("Sortie analogique de la girouette = " + String(moSbdMessage.GirValPot));
-   Serial.println("Vitesse de vent de l'anémomètre = " + String(moSbdMessage.AnemomVitesseVent));
+  Serial.println("Vitesse de vent de l'anémomètre = " + String(moSbdMessage.AnemomVitesseVent));
   Serial.println("Tension du Vin (V) : " + String(moSbdMessage.Vin));
   Serial.println("TransmitDuration = " + String(moSbdMessage.transmitDuration));
   Serial.println("TransmitStatus = " + String(moSbdMessage.transmitStatus));
