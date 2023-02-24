@@ -15,6 +15,7 @@
     //*** v2.4.0 : Commentaire sur la version du code et ajustement du temps du deep sleep pour la station météo
     //*** v2.5.0 : Prolongement de la mesure des données par la station météo
     //*** v2.5.1 : Réorganisation du code pour mieux capter et mieux afficher les données
+    //*** v2.6.0 : Ajout de commentaires pour une meilleure compréhension du code
 */
 //-----------------------------------------------------------------------
 
@@ -22,13 +23,13 @@
 //--- Déclaration des librairies (en ordre alpha) -----------------------
 #include "StationMeteoMain_2V0.h"//--> Librairie du fichier main.
 #include "VLlibrary.h"
-#include <LoRa.h>
+#include <LoRa.h> //https://github.com/sandeepmistry/arduino-LoRa
 #include <math.h>
 //-----------------------------------------------------------------------
 
 
 //--- Definitions -------------------------------------------------------
-#define Version "2.5.1"
+#define Version "2.6.0"
 //Paramètre de communication ESP32 et module RFM95:
 #define ss 16
 // Note pour ces broches:
@@ -50,7 +51,7 @@
 //Paramètres de la communication LoRa:
 //Consulter: https://www.baranidesign.com/faq-articles/2019/4/23/lorawan-usa-frequencies-channels-and-sub-bands-for-iot-devices
 const uint32_t BAND = 902500000;   //902.3MHz, Channel 2
-const uint8_t LoRasyncWord = 0x33;
+const uint8_t LoRasyncWord = 0x33; //Équivant à une valeur de 51 en décimale
 //The spreading factor (SF) impacts the communication performance of LoRa, which uses an SF between 7 and 12. A larger SF increases the time on air, which increases energy consumption, reduces the data rate, and improves communication range. For successful communication, as determined by the SF, the modulation method must correspond between a transmitter and a receiver for a given packet.
 const uint8_t LoRaSF = 10;
 const uint32_t LoRaSB = 125E3;
@@ -155,7 +156,7 @@ String str_donnees(){ //--> Met dans une variable String la structure de nos don
                + String(bmpAltitude()) + vir
                + String(dhtHumi()) + vir
                + String(dhtTemp()) + vir
-               + String(tempTC()) + vir //float(moSbdMessage.tcTemperatureC/100
+               + String(tempTC()) + vir 
                + String(gyLux()) + vir
                + String(distanceVL()) + vir
                + String(girouetteDirectionVent()) + vir
@@ -217,7 +218,7 @@ void setup() {
 }
 
 void loop() {
-  fillInData();
+  fillInData(); //Met à jour les données
   sendData(str_donnees(), path); //--> envoi des données vers la carte SD.
   Serial.print("Sending packet: ");
   Serial.print(moSbdMessage.iterationCounter);
@@ -225,15 +226,15 @@ void loop() {
   Serial.println(sizeof(moSbdMessage));
 
   moSbdMessage.unixtime = millis();
-  moSbdMessage.transmitDuration = DurationRTC;
-  moSbdMessage.iterationCounter = iterationRTC;
+  moSbdMessage.transmitDuration = DurationRTC;   //Met à jour la durée de la transmission du paquet
+  moSbdMessage.iterationCounter = iterationRTC;  //Met à jour le nombre d'itérations depuis le début du programme
   //Send LoRa packet to receiver
   uint32_t startTime = micros();  //Pour mesurer approx le temps de transmission
   LoRa.beginPacket();
   LoRa.write(moSbdMessage.bytes, sizeof(moSbdMessage));  //Clef pour la transmission "binaire"
   LoRa.endPacket();
   uint32_t endTime = micros();
-  DurationRTC = endTime-startTime;
+  DurationRTC = endTime-startTime; //Soustrait le temps final de la transmission du paquet avec le temps initial
   
   Serial.println("\nTempérature du BMP388 (°C) = " + String(moSbdMessage.bmpTemperatureC));
   Serial.println("Température du DHT22 (°C) = " + String(moSbdMessage.dhtTemperatureC));
