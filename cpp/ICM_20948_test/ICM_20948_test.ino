@@ -1,22 +1,22 @@
 //=====================================================================
 /*
-Nom : ICM_20948_acc_magn_gyros
-
-Auteur : Par Thomas Perras 
-
-Source des librairies :
--Adafruit_GPS (GPS) : https://github.com/adafruit/Adafruit_GPS
--IridiumSBD (ROCKBLOCK) : https://github.com/sparkfun/SparkFun_IridiumSBD_I2C_Arduino_Library
--ICM_20948 (Accel + Magneto + Gyroscope) : https://github.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary
--Decodeur : https://github.com/TechnoPhysCAL/TGP_Decodeur
+    Programme : ICM_20948_acc_magn_gyros
+    Date : Le 13 janvier 2023
+    Auteur : Par Thomas Perras 
+    Pltform matériel: FireBeetle-ESP32
+    Pltform develop : Arduino 1.8.15
+    Description:      Ce programme permet d'utiliser l'accéléromètre, le gyroscope, le GPS et le module de satellite RockBLOCK. On peut aussi utiliser le décodeur pour pouvoir visualiser les données sur le moniteur série, excepté pour le module du satellite qui n'est pas encore utilisé
+    -- Inspirations et credits: --
+     Gregory Petrov  - Août 2022
 */
 //=====================================================================
+
 
 //===========================================================================================================================================
 //                                                                   GPS
 //===========================================================================================================================================
 
-#include <Adafruit_GPS.h>
+#include <Adafruit_GPS.h> //https://github.com/adafruit/Adafruit_GPS
 #define GPSSerial Serial1
 
 #define BROCHE_RX_GPS 26
@@ -38,7 +38,7 @@ boolean flagGps = false;
 //                                                           ROCKBLOCK
 //===========================================================================================================================================
 
-#include <IridiumSBD.h>
+#include <IridiumSBD.h> //https://github.com/sparkfun/SparkFun_IridiumSBD_I2C_Arduino_Library
 
 #define RXD1_ROCKBLOCK 16
 #define TXD1_ROCKBLOCK 17
@@ -55,7 +55,7 @@ IridiumSBD modem(IridiumSerial);
 //===========================================================================================================================================
 //                                                     Sparkfun 9dof ICM_20948 (Accel + Magneto)
 //===========================================================================================================================================
-#include "ICM_20948.h"
+#include "ICM_20948.h" //https://github.com/sparkfun/SparkFun_ICM-20948_ArduinoLibrary
 ICM_20948_I2C myICM;
 
 #define AD0_VAL 1
@@ -176,7 +176,7 @@ boolean flagGyroscope = false;
 //                                                      TGP décodeur
 //===========================================================================================================================================
 
-#include <Decodeur.h>
+#include <Decodeur.h> //https://github.com/TechnoPhysCAL/TGP_Decodeur
 
 Decodeur monDecodeur(&Serial);
 
