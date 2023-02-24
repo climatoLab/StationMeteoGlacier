@@ -1,11 +1,11 @@
 //=====================================================================
 /*
-    Programme : ICM_20948_acc_magn_gyros
+    Programme : ICM_20948_test
     Date : Le 13 janvier 2023
     Auteur : Par Thomas Perras 
     Pltform matériel: FireBeetle-ESP32
     Pltform develop : Arduino 1.8.15
-    Description:      Ce programme permet d'utiliser l'accéléromètre, le gyroscope, le GPS et le module de satellite RockBLOCK. On peut aussi utiliser le décodeur pour pouvoir visualiser les données sur le moniteur série, excepté pour le module du satellite qui n'est pas encore utilisé
+    Description:      Ce programme permet d'utiliser l'accéléromètre, le gyroscope, le GPS et inclut le module de satellite RockBLOCK. On peut aussi utiliser le décodeur pour pouvoir visualiser les données sur le moniteur série, excepté pour le module du satellite qui n'est pas encore utilisé
     -- Inspirations et credits: --
      Gregory Petrov  - Août 2022
 */
