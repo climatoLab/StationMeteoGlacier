@@ -3,12 +3,6 @@
 Le document est une copie du ReadMe de la Station météo version école alors beaucoup de chose est à changer.
 
 
-
-
-
-
-
-
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
@@ -16,7 +10,13 @@ Le document est une copie du ReadMe de la Station météo version école alors b
 [![MIT License][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 -->
+<div align="center">
+<p align="center"> 
+Yh 10 mars 2023
 
+AVERTISSEMENT: cette branche concerne la station météo glacier avec une fonctionnalité WiFi
+</p>
+</div>
 <!-- PROJECT LOGO -->
 
 <br />
