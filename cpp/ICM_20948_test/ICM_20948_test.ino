@@ -123,7 +123,6 @@ float mCal[3][3] =
   { -0.103080, -0.054117, +1.022775}
 };*/
 
-//Valeurs obtenues au bureau 1.333 durant la session H23
 float MagOffset[3] = { -40.374321, -25.601593, -4.130264}; // Offsets pour les axes x, y et z; trouvés par la nouvelle calibration
 float mCal[3][3] =
 {
