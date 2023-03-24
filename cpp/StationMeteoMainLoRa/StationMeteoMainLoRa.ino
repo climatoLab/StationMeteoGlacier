@@ -211,9 +211,9 @@ void setup() {
   //Serial.println("\nEnd dumping RFM95 registers.");
   Serial.println("Current config:");
   Serial.print("SF=0x");
-  Serial.println(LoRa.getSpreadingFactor(),HEX);
+  //Serial.println(LoRa.getSpreadingFactor(),HEX);
   Serial.print("BW=");
-  Serial.println(LoRa.getSignalBandwidth());
+  //Serial.println(LoRa.getSignalBandwidth());
 
 }
 
