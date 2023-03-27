@@ -16,20 +16,21 @@
     //*** v2.5.0 : Prolongement de la mesure des données par la station météo
     //*** v2.5.1 : Réorganisation du code pour mieux capter et mieux afficher les données
     //*** v2.6.0 : Ajout de commentaires pour une meilleure compréhension du code
+    //*** v2.7.0 : Ajout d'une adresse destination et source et d'une version de la trame pour communication LoRa
 */
 //-----------------------------------------------------------------------
 
 
 //--- Déclaration des librairies (en ordre alpha) -----------------------
-#include "StationMeteoMain_2V0.h"//--> Librairie du fichier main.
-#include "VLlibrary.h"
+#include "lib\StationMeteoMain_2V0.h"//--> Librairie du fichier main.
+#include "lib\VLlibrary.h"
 #include <LoRa.h> //https://github.com/sandeepmistry/arduino-LoRa
 #include <math.h>
 //-----------------------------------------------------------------------
 
 
 //--- Definitions -------------------------------------------------------
-#define Version "2.6.0"
+#define Version "2.7.0"
 //Paramètre de communication ESP32 et module RFM95:
 #define ss 16
 // Note pour ces broches:
@@ -49,6 +50,9 @@
 
 //--- Constantes et variables --------------------------------------------------------
 //Paramètres de la communication LoRa:
+const byte currentSupportedFrameVersion = 0x02;
+const byte destination = 0xF0;      // destination to send to (gateway)
+const byte localAddress = 0x01;     // address of this device
 //Consulter: https://www.baranidesign.com/faq-articles/2019/4/23/lorawan-usa-frequencies-channels-and-sub-bands-for-iot-devices
 const uint32_t BAND = 902500000;   //902.3MHz, Channel 2
 const uint8_t LoRasyncWord = 0x33; //Équivant à une valeur de 51 en décimale
@@ -87,6 +91,9 @@ typedef union
   {
     // Ajouter destinataire et source: uint8_t chacun
     // Ajouter la version de la source: uint8_t
+    uint8_t  frameVersion;     //                                (1 byte)
+    uint8_t  recipient;        //                                (1 byte)
+    uint8_t  sender;           //                                (1 byte)
     uint32_t unixtime;         //                                (4 bytes)    
     int16_t  bmpTemperatureC;  //                                (2 bytes)   * 100           
     int16_t  dhtTemperatureC;  //                                (2 bytes)   * 100
@@ -107,8 +114,8 @@ typedef union
     uint16_t transmitDuration; // Previous transmission duration (2 bytes)
     uint8_t  transmitStatus;   // Iridium return code            (1 byte)
     uint16_t iterationCounter; // Message counter                (2 bytes)
-  } __attribute__((packed));                           // Total: (45 bytes)
-  uint8_t bytes[45];
+  } __attribute__((packed));                           // Total: (48 bytes)
+  uint8_t bytes[48];
 } SBD_MO_MESSAGE;
 
 SBD_MO_MESSAGE moSbdMessage;
@@ -122,7 +129,10 @@ String labelData = "Date, Time, Vin, bmpTemperature, bmpPression, bmpAltitude, d
 
 
 //Simple fonction pour assigner du data dans la structure
-void fillInData(void) {  
+void fillInData(void) { 
+    moSbdMessage.frameVersion = currentSupportedFrameVersion;
+    moSbdMessage.recipient = destination;
+    moSbdMessage.sender = localAddress; 
     moSbdMessage.unixtime = 123456789;
     moSbdMessage.bmpTemperatureC = bmpTemp() * 100;
     moSbdMessage.dhtTemperatureC = dhtTemp() * 100;
