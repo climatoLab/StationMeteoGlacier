@@ -11,12 +11,13 @@
     //*** v2.1.0 : Inclusion de la fonction pour la girouette
     //*** v2.2.0 : Inclusion de la fonction pour l'anémomètre
     //*** v2.2.1 : Changement de nom pour les variables de la girouette et de l'anémomètre
-    //*** v2.3.1 : Ajout des données de la girouette et de l'anémomètre dans la carte micro SD ainsi que des modifications sur les noms de leur fonction
+    //*** v2.3.0 : Ajout des données de la girouette et de l'anémomètre dans la carte micro SD ainsi que des modifications sur les noms de leur fonction
     //*** v2.4.0 : Commentaire sur la version du code et ajustement du temps du deep sleep pour la station météo
     //*** v2.5.0 : Prolongement de la mesure des données par la station météo
     //*** v2.5.1 : Réorganisation du code pour mieux capter et mieux afficher les données
     //*** v2.6.0 : Ajout de commentaires pour une meilleure compréhension du code
     //*** v2.7.0 : Ajout d'une adresse destination et source et d'une version de la trame pour communication LoRa
+    //*** v2.8.0 : Amélioration du calcul Time on air
 */
 //-----------------------------------------------------------------------
 
@@ -30,7 +31,7 @@
 
 
 //--- Definitions -------------------------------------------------------
-#define Version "2.7.0"
+#define Version "2.8.0"
 //Paramètre de communication ESP32 et module RFM95:
 #define ss 16
 // Note pour ces broches:
@@ -51,8 +52,8 @@
 //--- Constantes et variables --------------------------------------------------------
 //Paramètres de la communication LoRa:
 const byte currentSupportedFrameVersion = 0x02;
-const byte destination = 0xF0;      // destination to send to (gateway)
-const byte localAddress = 0x01;     // address of this device
+byte destination = 0xF0;      // destination to send to (gateway)
+byte localAddress = 0x01;     // address of this device
 //Consulter: https://www.baranidesign.com/faq-articles/2019/4/23/lorawan-usa-frequencies-channels-and-sub-bands-for-iot-devices
 const uint32_t BAND = 902500000;   //902.3MHz, Channel 2
 const uint8_t LoRasyncWord = 0x33; //Équivant à une valeur de 51 en décimale
@@ -60,6 +61,13 @@ const uint8_t LoRasyncWord = 0x33; //Équivant à une valeur de 51 en décimale
 const uint8_t LoRaSF = 10;
 const uint32_t LoRaSB = 125E3;
 const uint8_t LoRaCR = 5;
+//Variable globales de TimeOnAir
+uint32_t ToAStart=0;
+RTC_DATA_ATTR uint32_t  LoRaTimeOnAir = 0; //Variable qui doit persister
+RTC_DATA_ATTR uint16_t iterationRTC;
+
+String path = "/Yamaska_A2022.txt"; //--> Chemin emprunter pour enregistrer les données sur la carte SD.
+String labelData = "Date, Time, Vin, bmpTemperature, bmpPression, bmpAltitude, dhtHumidite, dhtTemperature, tcTemperature, gyLuminosite, distanceVL, GirDirVent, AnemomVitVent\n"; //--> Première ligne enregistrer sur la carte SD, représente l'ordre des valeurs.
 
 //Mode deep sleep
 unsigned long timeSleep = 60;  //--> Durée du Deep Sleep (sec)
@@ -121,19 +129,13 @@ typedef union
 SBD_MO_MESSAGE moSbdMessage;
 
 
-RTC_DATA_ATTR uint16_t iterationRTC;
-RTC_DATA_ATTR uint16_t DurationRTC;
-
-String path = "/Yamaska_A2022.txt"; //--> Chemin emprunter pour enregistrer les données sur la carte SD.
-String labelData = "Date, Time, Vin, bmpTemperature, bmpPression, bmpAltitude, dhtHumidite, dhtTemperature, tcTemperature, gyLuminosite, distanceVL, GirDirVent, AnemomVitVent\n"; //--> Première ligne enregistrer sur la carte SD, représente l'ordre des valeurs.
-
-
 //Simple fonction pour assigner du data dans la structure
 void fillInData(void) { 
     moSbdMessage.frameVersion = currentSupportedFrameVersion;
     moSbdMessage.recipient = destination;
     moSbdMessage.sender = localAddress; 
-    moSbdMessage.unixtime = 123456789;
+    
+    moSbdMessage.unixtime = rtc.now().unixtime();
     moSbdMessage.bmpTemperatureC = bmpTemp() * 100;
     moSbdMessage.dhtTemperatureC = dhtTemp() * 100;
     moSbdMessage.tcTemperatureC = tempTC() * 100;
@@ -150,9 +152,7 @@ void fillInData(void) {
     moSbdMessage.altitudeGPS = 332;
     moSbdMessage.satellites = 56;
     moSbdMessage.hdop = 5;
-    moSbdMessage.transmitDuration;
-    moSbdMessage.transmitStatus;
-    moSbdMessage.iterationCounter;
+    moSbdMessage.transmitStatus = 1;
 }
 
 //-----------------------------------------------------------------------
@@ -174,6 +174,14 @@ String str_donnees(){ //--> Met dans une variable String la structure de nos don
 return s_msg;
 }
 
+void onTxDone() {
+  uint32_t ToAStop = micros();
+  if (ToAStop > ToAStart)
+    LoRaTimeOnAir = ToAStop - ToAStart;
+  else LoRaTimeOnAir=0;
+  
+  //TBD: variable (globale) indiquant la complétion de la transmission pour permettre d'éteindre les modules et entrer en dormance
+}
 
 void setup() {
   Serial.begin(115200);
@@ -213,6 +221,8 @@ void setup() {
   LoRa.setSpreadingFactor(LoRaSF);
   LoRa.setSignalBandwidth(LoRaSB);
   LoRa.setCodingRate4(LoRaCR);
+
+  LoRa.onTxDone(onTxDone);
   
 
   Serial.println("LoRa Initializing OK!");
@@ -235,16 +245,13 @@ void loop() {
   Serial.print("  of len=");
   Serial.println(sizeof(moSbdMessage));
 
-  moSbdMessage.unixtime = millis();
-  moSbdMessage.transmitDuration = DurationRTC;   //Met à jour la durée de la transmission du paquet
+  moSbdMessage.transmitDuration = LoRaTimeOnAir;   //Met à jour la durée de la transmission du paquet
   moSbdMessage.iterationCounter = iterationRTC;  //Met à jour le nombre d'itérations depuis le début du programme
   //Send LoRa packet to receiver
-  uint32_t startTime = micros();  //Pour mesurer approx le temps de transmission
   LoRa.beginPacket();
   LoRa.write(moSbdMessage.bytes, sizeof(moSbdMessage));  //Clef pour la transmission "binaire"
+  ToAStart = micros();
   LoRa.endPacket();
-  uint32_t endTime = micros();
-  DurationRTC = endTime-startTime; //Soustrait le temps final de la transmission du paquet avec le temps initial
   
   Serial.println("\nTempérature du BMP388 (°C) = " + String(moSbdMessage.bmpTemperatureC));
   Serial.println("Température du DHT22 (°C) = " + String(moSbdMessage.dhtTemperatureC));
