@@ -1,8 +1,8 @@
 /******************************************************************
    Nom: StationMeteoMain_2V0.ino
    Créer par: Thomas Perras
-   Description: Programme de la Station Meteo Glacier conçu pour communiquer avec le LoRa pour envoyer des données à un gateway.           
-   
+   Description: Programme de la Station Meteo Glacier conçu pour communiquer avec le LoRa pour envoyer des données à un gateway.
+
 ******************************************************************/
 
 /* --- HISTORIQUE de développement --------------------------------------
@@ -62,7 +62,8 @@ const uint8_t LoRaSF = 10;
 const uint32_t LoRaSB = 125E3;
 const uint8_t LoRaCR = 5;
 //Variable globales de TimeOnAir
-uint32_t ToAStart=0;
+bool transmissionTerminee = false;
+uint32_t ToAStart = 0;
 RTC_DATA_ATTR uint32_t  LoRaTimeOnAir = 0; //Variable qui doit persister
 RTC_DATA_ATTR uint16_t iterationRTC;
 
@@ -70,9 +71,10 @@ String path = "/Yamaska_A2022.txt"; //--> Chemin emprunter pour enregistrer les 
 String labelData = "Date, Time, Vin, bmpTemperature, bmpPression, bmpAltitude, dhtHumidite, dhtTemperature, tcTemperature, gyLuminosite, distanceVL, GirDirVent, AnemomVitVent\n"; //--> Première ligne enregistrer sur la carte SD, représente l'ordre des valeurs.
 
 //Mode deep sleep
-unsigned long timeSleep = 60;  //--> Durée du Deep Sleep (sec)
-unsigned long micInSec = 1000000; //--> Facteur de conversion de microsec en sec pour le Deep Sleep
-unsigned long totSleep = timeSleep * micInSec; //--> Durée total du Deep Sleep en microsecondes.
+unsigned long timeSleep = 60000000;  //--> 60 secondes de deep sleep (microsec)
+unsigned long startTime = 0;   //--> Permet de mesurer le temps d'exécution du programme
+unsigned long stopTime = 0;   //--> Permet de mesurer le temps d'exécution du programme
+unsigned long totSleep = timeSleep - (stopTime - startTime); //--> Durée total du Deep Sleep ajustée (microsec)
 unsigned long pre_millis = 0; //--> Initialisation de la variable utiliser pour le delay sans arrêt <No_Stop_Delay (NSD)>
 unsigned long trigger_NSD = 1000; //--> Trigger pour indiquer au delay sans arrêt qui est temps d'effectuer une action. <No_Stop_Delay (NSD)>
 
@@ -102,8 +104,8 @@ typedef union
     uint8_t  frameVersion;     //                                (1 byte)
     uint8_t  recipient;        //                                (1 byte)
     uint8_t  sender;           //                                (1 byte)
-    uint32_t unixtime;         //                                (4 bytes)    
-    int16_t  bmpTemperatureC;  //                                (2 bytes)   * 100           
+    uint32_t unixtime;         //                                (4 bytes)
+    int16_t  bmpTemperatureC;  //                                (2 bytes)   * 100
     int16_t  dhtTemperatureC;  //                                (2 bytes)   * 100
     int16_t  tcTemperatureC;   //                                (2 bytes)   * 100
     uint16_t bmpPressionHPa;   //                                (2 bytes)
@@ -130,72 +132,74 @@ SBD_MO_MESSAGE moSbdMessage;
 
 
 //Simple fonction pour assigner du data dans la structure
-void fillInData(void) { 
-    moSbdMessage.frameVersion = currentSupportedFrameVersion;
-    moSbdMessage.recipient = destination;
-    moSbdMessage.sender = localAddress; 
-    
-    moSbdMessage.unixtime = rtc.now().unixtime();
-    moSbdMessage.bmpTemperatureC = bmpTemp() * 100;
-    moSbdMessage.dhtTemperatureC = dhtTemp() * 100;
-    moSbdMessage.tcTemperatureC = tempTC() * 100;
-    moSbdMessage.bmpPressionHPa = bmpPression();
-    moSbdMessage.dhtHumidite = dhtHumi();
-    moSbdMessage.vlDistanceMM = distanceVL();
-    moSbdMessage.gy49LuminositeLux = gyLux();
-    moSbdMessage.bmpAltitude = bmpAltitude();
-    moSbdMessage.GirValPot = girouetteDirectionVent();
-    moSbdMessage.AnemomVitesseVent = anemometreVitesseVent() * 100;
-    moSbdMessage.Vin = lecture_VinExt() * 100;
-    moSbdMessage.latitudeGPS = 5;
-    moSbdMessage.longitudeGPS = 22;
-    moSbdMessage.altitudeGPS = 332;
-    moSbdMessage.satellites = 56;
-    moSbdMessage.hdop = 5;
-    moSbdMessage.transmitStatus = 1;
+void fillInData(void) {
+  moSbdMessage.frameVersion = currentSupportedFrameVersion;
+  moSbdMessage.recipient = destination;
+  moSbdMessage.sender = localAddress;
+
+  moSbdMessage.unixtime = rtc.now().unixtime();
+  moSbdMessage.bmpTemperatureC = bmpTemp() * 100;
+  moSbdMessage.dhtTemperatureC = dhtTemp() * 100;
+  moSbdMessage.tcTemperatureC = tempTC() * 100;
+  moSbdMessage.bmpPressionHPa = bmpPression();
+  moSbdMessage.dhtHumidite = dhtHumi();
+  moSbdMessage.vlDistanceMM = distanceVL();
+  moSbdMessage.gy49LuminositeLux = gyLux();
+  moSbdMessage.bmpAltitude = bmpAltitude();
+  moSbdMessage.GirValPot = girouetteDirectionVent();
+  moSbdMessage.AnemomVitesseVent = anemometreVitesseVent() * 100;
+  moSbdMessage.Vin = lecture_VinExt() * 100;
+  moSbdMessage.latitudeGPS = 5;
+  moSbdMessage.longitudeGPS = 22;
+  moSbdMessage.altitudeGPS = 332;
+  moSbdMessage.satellites = 56;
+  moSbdMessage.hdop = 5;
+  moSbdMessage.transmitStatus = 1;
 }
 
 //-----------------------------------------------------------------------
 
-String str_donnees(){ //--> Met dans une variable String la structure de nos données
+String str_donnees() { //--> Met dans une variable String la structure de nos données
   String s_msg = getDateRTC() + vir
-               + getTimeRTC() + vir
-               + String(lecture_VinExt()) + vir
-               + String(bmpTemp()) + vir
-               + String(bmpPression()) + vir
-               + String(bmpAltitude()) + vir
-               + String(dhtHumi()) + vir
-               + String(dhtTemp()) + vir
-               + String(tempTC()) + vir 
-               + String(gyLux()) + vir
-               + String(distanceVL()) + vir
-               + String(girouetteDirectionVent()) + vir
-               + String(anemometreVitesseVent()) + "\n";
-return s_msg;
+                 + getTimeRTC() + vir
+                 + String(lecture_VinExt()) + vir
+                 + String(bmpTemp()) + vir
+                 + String(bmpPression()) + vir
+                 + String(bmpAltitude()) + vir
+                 + String(dhtHumi()) + vir
+                 + String(dhtTemp()) + vir
+                 + String(tempTC()) + vir
+                 + String(gyLux()) + vir
+                 + String(distanceVL()) + vir
+                 + String(girouetteDirectionVent()) + vir
+                 + String(anemometreVitesseVent()) + "\n";
+  return s_msg;
 }
 
 void onTxDone() {
+  transmissionTerminee = true;
   uint32_t ToAStop = micros();
   if (ToAStop > ToAStart)
     LoRaTimeOnAir = ToAStop - ToAStart;
-  else LoRaTimeOnAir=0;
-  
+  else LoRaTimeOnAir = 0;
+
   //TBD: variable (globale) indiquant la complétion de la transmission pour permettre d'éteindre les modules et entrer en dormance
 }
 
 void setup() {
+  startTime = micros();
   Serial.begin(115200);
   while (!Serial);
   i2c_init_(); //--> initialisation des pins i2c.
-  initLibs(path,labelData); //--> initialisation des objets.
+  initLibs(path, labelData); //--> initialisation des objets.
   //Initialise le VL53L1X
   init_VL();
-  
+
   //Initialise l'anémomètre
   pinMode(WindSensorPin, INPUT);
   attachInterrupt(digitalPinToInterrupt(WindSensorPin), isr_rotation, FALLING);
   lastInterrupt = millis();
-  //Initialise la girouette  
+  //Initialise la girouette
   pinMode(34, OUTPUT);
   digitalWrite(34, HIGH);
 
@@ -203,7 +207,7 @@ void setup() {
 
   //setup LoRa transceiver module
   LoRa.setPins(ss, rst, dio0);
-  
+
   //replace the freq LoRa.begin(freq) argument with your location's frequency
   //Voir la note ci-haut à la def BAND
   Serial.println("Initializing");
@@ -216,14 +220,14 @@ void setup() {
   // The sync word assures you don't get LoRa messages from other LoRa transceivers
   // ranges from 0-0xFF
   LoRa.setSyncWord(LoRasyncWord);
-  LoRa.enableCrc();  
+  LoRa.enableCrc();
   //The spreading factor (SF) impacts the communication performance of LoRa, which uses an SF between 7 and 12. A larger SF increases the time on air, which increases energy consumption, reduces the data rate, and improves communication range. For successful communication, as determined by the SF, the modulation method must correspond between a transmitter and a receiver for a given packet.
   LoRa.setSpreadingFactor(LoRaSF);
   LoRa.setSignalBandwidth(LoRaSB);
   LoRa.setCodingRate4(LoRaCR);
 
   LoRa.onTxDone(onTxDone);
-  
+
 
   Serial.println("LoRa Initializing OK!");
   //Serial.println("Dumping RFM95 registers:");
@@ -251,14 +255,14 @@ void loop() {
   LoRa.beginPacket();
   LoRa.write(moSbdMessage.bytes, sizeof(moSbdMessage));  //Clef pour la transmission "binaire"
   ToAStart = micros();
-  LoRa.endPacket();
-  
+  LoRa.endPacket(true);
+
   Serial.println("\nTempérature du BMP388 (°C) = " + String(moSbdMessage.bmpTemperatureC));
   Serial.println("Température du DHT22 (°C) = " + String(moSbdMessage.dhtTemperatureC));
   Serial.println("Température du thermocouple (°C) = " + String(moSbdMessage.tcTemperatureC));
   Serial.println("Pression (hPa) = " + String(moSbdMessage.bmpPressionHPa));
   Serial.println("Humidité du DHT22 (%) = " + String( moSbdMessage.dhtHumidite));
-  Serial.println("Distance du VL53L1X (mm) : " + String(moSbdMessage.vlDistanceMM)); 
+  Serial.println("Distance du VL53L1X (mm) : " + String(moSbdMessage.vlDistanceMM));
   Serial.println("Luminosité (lux) : " + String(moSbdMessage.gy49LuminositeLux));
   Serial.println("Altitude : " + String(moSbdMessage.bmpAltitude));
   Serial.println("Sortie analogique de la girouette = " + String(moSbdMessage.GirValPot));
@@ -266,12 +270,23 @@ void loop() {
   Serial.println("Tension du Vin (V) : " + String(moSbdMessage.Vin));
   Serial.println("TransmitDuration = " + String(moSbdMessage.transmitDuration));
   Serial.println("TransmitStatus = " + String(moSbdMessage.transmitStatus));
-  Serial.println("IterationCounter = " + String(moSbdMessage.iterationCounter) + "\n");  
-  unsigned long cur_millis = millis(); //--> indique la valeur actuel des millis() 
+  Serial.println("IterationCounter = " + String(moSbdMessage.iterationCounter) + "\n");
+  unsigned long cur_millis = millis(); //--> indique la valeur actuel des millis()
 
+  int compteur = 50;
+  while (!transmissionTerminee && compteur > 0) {
+    compteur--;
+    delay(100);
+  }
+
+  if (compteur <= 0) {
+    Serial.println("Le flag de transmission a échoué");
+  }
+
+  stopTime = micros();
   iterationRTC++;
   //if(cur_millis - pre_millis >= trigger_NSD){ //--> Condition que le trigger_NSD est respecter en rapport avec la différence des millis actuel et de l'ancienne boucle.
-    //pre_millis = cur_millis;  //--> ajustement inutile puisque le code se recompile (à voir)
-    esp_deep_sleep(totSleep); //--> Entre en mode deep sleep pour une durée de x microsecondes
+  //pre_millis = cur_millis;  //--> ajustement inutile puisque le code se recompile (à voir)
+  esp_deep_sleep(totSleep); //--> Entre en mode deep sleep pour une durée de x microsecondes
   //}
 }
