@@ -31,7 +31,7 @@
 
 
 //--- Definitions -------------------------------------------------------
-#define Version "2.8.0"
+#define Version "2.8.1"
 //Paramètre de communication ESP32 et module RFM95:
 #define ss 16
 // Note pour ces broches:
@@ -249,7 +249,7 @@ void loop() {
   Serial.print("  of len=");
   Serial.println(sizeof(moSbdMessage));
 
-  moSbdMessage.transmitDuration = LoRaTimeOnAir;   //Met à jour la durée de la transmission du paquet
+  moSbdMessage.transmitDuration = (LoRaTimeOnAir/1000UL);   //Met à jour la durée de la transmission du paquet
   moSbdMessage.iterationCounter = iterationRTC;  //Met à jour le nombre d'itérations depuis le début du programme
   //Send LoRa packet to receiver
   LoRa.beginPacket();
