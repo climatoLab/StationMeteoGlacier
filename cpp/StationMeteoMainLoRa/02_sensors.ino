@@ -261,13 +261,58 @@ void readWindDirection(){
   if (millis() - lastSensorAcquisition > delai_capteur_lecture) {
     lastSensorAcquisition = millis();
 
-    moSbdMessage.windDirection = analogRead(PIN_WIND_DIRECTION);
+    uint16_t adc_WindDirectionValue = analogRead(PIN_WIND_DIRECTION);
     
     //roseDESvents(moSbdMessage.GirValPot);
+    moSbdMessage.windDirection = windCompass(adc_WindDirectionValue);
   }  
 }
 
+uint8_t windCompass(int windDirection){
 
+  /*--------- Tableau des valeurs ---------
+   * 8BIT|| Point Cardinal  
+   * --------------------------------------
+   * 0    NORD            (N)     
+   * 1    NORD NORD EST   (NNE)       
+   * 2    NORD EST        (NE)
+   * 3    EST NORD EST    (ENE)
+   * 4    EST             (E)
+   * 5    EST SUD EST     (ESE)
+   * 6    SUD EST         (SE)
+   * 7    SUD SUD EST     (SSE)
+   * 8    SUD             (S)
+   * 9    SUD SUD OUEST   (SSO)
+   * 10   SUD OUEST       (SO)
+   * 11   OUEST SUD OUEST (OSO)
+   * 12   OUEST           (O)
+   * 13   OUEST NORD OUEST(ONO)
+   * 14   NORD OUEST      (NO)
+   * 15   NORD NORD OUEST (NNO)
+   ---------------------------------------*/
+
+  uint8_t cardinalPoint = 0; // valeur par défaut
+    if (windDirection <= 893) cardinalPoint               = 5;        //EST SUD EST (N) (0)
+    else if (windDirection <= 932) cardinalPoint          = 3;        //EST NORD EST (ENE)
+    else if (windDirection<= 993) cardinalPoint           = 4;        //EST (E)
+    else if (windDirection <= 1126) cardinalPoint         = 7;        //SUD SUD EST (SSE) 
+    else if (windDirection <= 1301) cardinalPoint         = 6;        //SUD EST (SE) 
+    else if (windDirection <= 1455) cardinalPoint         = 9;        //SUD SUD OUEST (SSO) 
+    else if (windDirection<= 1705) cardinalPoint          = 8;        //SUD (S) 
+    else if (windDirection <= 1979) cardinalPoint         = 1;        //NORD NORD EST (NNE)
+    else if (windDirection<= 2298 ) cardinalPoint         = 2;        //NORD EST (NE) 
+    else if (windDirection <= 2580) cardinalPoint         = 11;       //OUEST SUD OUEST (OSO)
+    else if (windDirection <= 2759) cardinalPoint         = 10;       //SUD OUEST (SO)
+    else if (windDirection <= 3036) cardinalPoint         = 15;       //NORD NORD OUEST (NNO)
+    else if (windDirection <= 3262) cardinalPoint         = 0;        //NORD (N)
+    else if (windDirection <= 3450) cardinalPoint         = 13;       //OUEST NORD OUEST (ONO)
+    else if (windDirection <= 3674) cardinalPoint         = 14;       //NORD OUEST (NO)
+    else if (windDirection <= 4000) cardinalPoint         = 12;       //OUEST (0)
+    else cardinalPoint                                    = 0;        //Défaut
+
+    return cardinalPoint;
+}
+/*
 void roseDESvents(int GirValPot) {
 
  static uint16_t angle = 0;
@@ -289,7 +334,7 @@ void roseDESvents(int GirValPot) {
   else if (GirValPot <= 3972) angle = 270;  //OUEST (0)
   else angle = 0;
 //  ptr->angleVent = angle;
-
+*/
 /*  String dirVent;
   if(angle == 338 || angle == 0)  dirVent = "NORD";
   else if(angle == 23 || angle == 45)   dirVent = "NORD-EST";
@@ -347,7 +392,7 @@ void roseDESvents(int GirValPot) {
     Serial.println("N");
   }
 */
-}
+//}
 
 // ----------------------------------------------------------------------------
 // Anémomètre Vitesse du vent

@@ -39,8 +39,6 @@
 // ----------------------------------------------------------------------------
 // Libraries
 // ----------------------------------------------------------------------------
-//#include "lib\pmodTC.h"//--> Librairie du fichier main.
-//#include "lib\VLlibrary.h"
 #include <Adafruit_Sensor.h>      // https://github.com/adafruit/Adafruit_Sensor
 #include "Adafruit_BMP3XX.h"      // https://github.com/adafruit/Adafruit_BMP3XX
 #include <Max44009.h>             // https://github.com/RobTillaart/Max44009
@@ -66,7 +64,7 @@
 // ----------------------------------------------------------------------------
 // Define version du programme
 // ----------------------------------------------------------------------------
-#define VERSION                 "2.8.1"
+#define VERSION                 "3.0.0"
 
 #define SUPPORTED_FRAME_VERION  0x02
 
@@ -173,7 +171,7 @@ float tensionReelle_VinExt          = 0;
 //const byte currentSupportedFrameVersion = 0x02;
 
 byte destination              = 0xF0;      // destination to send to (gateway)
-byte localAddress             = 0x01;     // address of this device
+byte localAddress             = 0x05;     // address of this device
 const uint32_t BAND           = 902500000;   //902.3MHz, Channel 2
 const uint8_t LoRasyncWord    = 0x33; //Équivant à une valeur de 51 en décimale
 //The spreading factor (SF) impacts the communication performance of LoRa, which uses an SF between 7 and 12. A larger SF increases the time on air, which increases energy consumption, reduces the data rate, and improves communication range. For successful communication, as determined by the SF, the modulation method must correspond between a transmitter and a receiver for a given packet.
@@ -213,6 +211,7 @@ unsigned long lastSensorAcquisition = millis();
 unsigned long lastSentSensorAcquisition = millis();
 int delai_capteur_lecture = 250;
 int delai = 0;
+unsigned int adc_WindDirectionValue = 0;
 
 
 // ----------------------------------------------------------------------------
@@ -477,7 +476,7 @@ void setup(){
 
   // Initialisation du I2C
   Wire.begin();
-  //Wire.setClock(400000); // Set I2C clock speed to 400 kHz
+  Wire.setClock(400000); // Set I2C clock speed to 400 kHz
 
   init_SD(path, labelData);
   init_RTC();
@@ -489,7 +488,7 @@ void setup(){
 
 void loop(){
 
-
+  Serial.println(ESP.getFreeHeap());
   readBmp388();
   readDHT22();
   readTC();
@@ -503,20 +502,10 @@ void loop(){
   sendData(str_donnees(), path);
 
   transmitData();
-  
-  Serial.println("\nTempérature du BMP388 (°C)          = " + String(moSbdMessage.bmpTemperatureC));
-  Serial.println("Pression du BMP388 (hPa)            = " + String(moSbdMessage.bmpPressionHPa));
-  Serial.println("Altitude du BMP388 (m)              = " + String(moSbdMessage.bmpAltitude));
-  Serial.println("Température du DHT22 (°C)           = " + String(moSbdMessage.dhtTemperatureC));
-  Serial.println("Humidité du DHT22 (%)               = " + String( moSbdMessage.dhtHumidite));
-  Serial.println("Température du thermocouple (°C)    = " + String(moSbdMessage.tcTemperatureC));
-  Serial.println("Luminosité (lux)                    = " + String(moSbdMessage.gy49LuminositeLux));
-  Serial.println("Distance du VL53L1X (mm)            = " + String(moSbdMessage.vlDistanceMM));
-  Serial.println("Sortie analogique de la girouette   = " + String(moSbdMessage.windDirection));
-  Serial.println("Vitesse de vent de l'anémomètre     = " + String(moSbdMessage.windSpeed));
-  Serial.println("Tension du Vin (V)                  = " + String(moSbdMessage.Vin));
 
-  Serial.println(str_donnees());
+  Serial.println(ESP.getFreeHeap());
+  
+  printAcquisition();
   
   esp_deep_sleep(totSleep); //--> Entre en mode deep sleep pour une durée de x microsecondes
   

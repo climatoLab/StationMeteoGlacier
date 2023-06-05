@@ -17,10 +17,12 @@ void loraConfig(){
   //replace the freq LoRa.begin(freq) argument with your location's frequency
   //Voir la note ci-haut à la def BAND
   Serial.println("Initializing");
+
   while (!LoRa.begin(BAND)) {
     Serial.print(".");
     delay(500);
   }
+  
   Serial.println(".");
   // Change sync word to match the receiver
   // The sync word assures you don't get LoRa messages from other LoRa transceivers
@@ -48,9 +50,13 @@ void loraConfig(){
 
 void transmitData(){
   Serial.print("Sending packet: ");
-  Serial.print(moSbdMessage.iterationCounter);
-  Serial.print("  of len=");
+  Serial.print(String(iterationRTC));
+  Serial.print(" of len = ");
   Serial.println(sizeof(moSbdMessage));
+
+  moSbdMessage.frameVersion = SUPPORTED_FRAME_VERION;
+  moSbdMessage.recipient = destination;
+  moSbdMessage.sender = localAddress;
 
   moSbdMessage.transmitDuration = (LoRaTimeOnAir/1000UL);   //Met à jour la durée de la transmission du paquet
   moSbdMessage.iterationCounter = iterationRTC;  //Met à jour le nombre d'itérations depuis le début du programme
@@ -71,4 +77,6 @@ void transmitData(){
   if (compteur <= 0) {
     Serial.println("Le flag de transmission a échoué");
   }
+  stopTime = micros();
+  iterationRTC++;
 }
