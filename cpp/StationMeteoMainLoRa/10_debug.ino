@@ -11,7 +11,7 @@ void printTab(byte _times)
 {
   for (byte i = 0; i < _times; i++)
   {
-    Serial.println("\t");
+    Serial.print("\t");
   }
 }
 
@@ -56,4 +56,31 @@ void printAcquisition(){
   printLine();
   Serial.print("Chaine de données envoyée sur la carte uSD\n"+str_donnees());
   printLine();
+}
+
+void printSD_Info(){
+  
+  printLine();
+  Serial.println("Information carte microSD");
+  printLine();
+
+  uint8_t cardType = SD.cardType();
+  Serial.print("Type de carte micro SD:");   printTab(1);
+  if(cardType == CARD_MMC){
+    Serial.println("MMC");
+  } else if(cardType == CARD_SD){
+    Serial.println("SDSC");
+  } else if(cardType == CARD_SDHC){
+    Serial.println("SDHC");
+  } else {
+    Serial.println("UNKNOWN");
+  }
+    
+  Serial.print("Taille de la carte micro SD:");   printTab(1);    Serial.println(String(SD.cardSize()));
+  Serial.print("Espace total : ");                printTab(1);    Serial.println(String(SD.totalBytes()));
+  Serial.print("Espace restant : ");              printTab(1);    Serial.println(String(SD.usedBytes()));
+  Serial.printf("Used space: %lluMB\n", SD.usedBytes() / (1024 * 1024));
+    
+  printLine();
+  
 }

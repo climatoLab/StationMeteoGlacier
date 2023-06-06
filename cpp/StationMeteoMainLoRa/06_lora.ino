@@ -11,40 +11,55 @@ void onTxDone() {
 void loraConfig(){
   Serial.println("LoRa Sender");
 
-  //setup LoRa transceiver module
+  //Configuration transmetteur LoRa
   LoRa.setPins(PIN_LORA_SS, PIN_LORA_RST, PIN_LORA_DIO0);
 
   //replace the freq LoRa.begin(freq) argument with your location's frequency
   //Voir la note ci-haut à la def BAND
   Serial.println("Initializing");
+ 
+  previousMillis_LoRa = millis();
+  
+  while (!online.lora) {
 
-  while (!LoRa.begin(BAND)) {
-    Serial.print(".");
-    delay(500);
+    if(!LoRa.begin(BAND)){
+      Serial.print(".");
+      myDelay(500);
+    }
+    else{
+      online.lora = true;
+      Serial.println("SUCCESS!");
+      // Change sync word to match the receiver
+      // The sync word assures you don't get LoRa messages from other LoRa transceivers
+      // ranges from 0-0xFF
+      LoRa.setSyncWord(LoRasyncWord);
+      LoRa.enableCrc();
+      //The spreading factor (SF) impacts the communication performance of LoRa, which uses an SF between 7 and 12. A larger SF increases the time on air, which increases energy consumption, reduces the data rate, and improves communication range. For successful communication, as determined by the SF, the modulation method must correspond between a transmitter and a receiver for a given packet.
+      LoRa.setSpreadingFactor(LoRaSF);
+      LoRa.setSignalBandwidth(LoRaSB);
+      LoRa.setCodingRate4(LoRaCR);
+
+      LoRa.onTxDone(onTxDone);  
+    }
+    
+    if (millis() - previousMillis_LoRa >= interval_LoRaTimeout) {
+       Serial.println("FAILED!");
+       break;
+    }
+    
   }
   
-  Serial.println(".");
-  // Change sync word to match the receiver
-  // The sync word assures you don't get LoRa messages from other LoRa transceivers
-  // ranges from 0-0xFF
-  LoRa.setSyncWord(LoRasyncWord);
-  LoRa.enableCrc();
-  //The spreading factor (SF) impacts the communication performance of LoRa, which uses an SF between 7 and 12. A larger SF increases the time on air, which increases energy consumption, reduces the data rate, and improves communication range. For successful communication, as determined by the SF, the modulation method must correspond between a transmitter and a receiver for a given packet.
-  LoRa.setSpreadingFactor(LoRaSF);
-  LoRa.setSignalBandwidth(LoRaSB);
-  LoRa.setCodingRate4(LoRaCR);
-
-  LoRa.onTxDone(onTxDone);
 
 
-  Serial.println("LoRa Initializing OK!");
+
+  //Serial.println("LoRa Initializing OK!");
   //Serial.println("Dumping RFM95 registers:");
   //LoRa.dumpRegisters(Serial);
   //Serial.println("\nEnd dumping RFM95 registers.");
-  Serial.println("Current config:");
-  Serial.print("SF=0x");
+  //Serial.println("Current config:");
+  //Serial.print("SF=0x");
   //Serial.println(LoRa.getSpreadingFactor(),HEX);
-  Serial.print("BW=");
+  //Serial.print("BW=");
   //Serial.println(LoRa.getSignalBandwidth());
 }
 

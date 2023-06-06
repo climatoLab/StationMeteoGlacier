@@ -127,7 +127,7 @@ SFEVL53L1X            vl;
 Adafruit_MAX31855     tc(PIN_MAXCS);
 
 // ----------------------------------------------------------------------------
-// Objets statisticques
+// Objets statistiques
 // ----------------------------------------------------------------------------
 typedef statistic::Statistic<float,uint32_t,false> StatisticCAL;
 StatisticCAL bmpTempStats;          // Température du BMP388
@@ -144,6 +144,23 @@ StatisticCAL windSpeedStats;       // Wind speed
 StatisticCAL uStats;               // Wind east-west wind vector component (u)
 StatisticCAL vStats;               // Wind north-south wind vector component (v)
 */
+
+// ----------------------------------------------------------------------------
+// Variables de contrôles
+// ----------------------------------------------------------------------------
+  uint16_t espSleepTime = 10; // Temps du deep sleep en secondes
+  uint16_t timeout_LoRa = 20; // Timeout du LoRa en secondes (Défaut : 20)
+  
+// ----------------------------------------------------------------------------
+// Variable globales du deep sleep
+// ----------------------------------------------------------------------------
+unsigned long micro2sec   = 1000000;  //--> Variable de convertion de micro sec à sec.
+unsigned long millis2sec  = 1000;     //--> Variable de convertion de millis sec à sec.
+unsigned long startTime   = 0;   //--> Permet de mesurer le temps d'exécution du programme
+unsigned long stopTime    = 0;   //--> Permet de mesurer le temps d'exécution du programme
+unsigned long totSleep    = (espSleepTime * micro2sec) - (stopTime - startTime); //--> Durée total du Deep Sleep ajustée (microsec)
+unsigned long pre_millis  = 0; //--> Initialisation de la variable utiliser pour le delay sans arrêt <No_Stop_Delay (NSD)>
+unsigned long trigger_NSD = 1000; //--> Trigger pour indiquer au delay sans arrêt qui est temps d'effectuer une action. <No_Stop_Delay (NSD)>
 // ----------------------------------------------------------------------------
 // Coefficients du polynômes de degré 4 pour corriger les non linéarités du convertisseur ADC
 // ----------------------------------------------------------------------------
@@ -179,6 +196,9 @@ const uint8_t LoRaSF          = 10;
 const uint32_t LoRaSB         = 125E3;
 const uint8_t LoRaCR          = 5;
 
+// Pour le NBD <Non-Blocking Delay> du LoRa timeout.
+unsigned long previousMillis_LoRa = 0;
+unsigned long interval_LoRaTimeout = timeout_LoRa * millis2sec;
 // ----------------------------------------------------------------------------
 // Variable globales de TimeOnAir
 // ----------------------------------------------------------------------------
@@ -193,16 +213,6 @@ RTC_DATA_ATTR uint16_t iterationRTC;
 String path         = "/data.txt"; //--> Chemin emprunter pour enregistrer les données sur la carte SD.
 // À intégrer dans la structure des données
 String labelData    = "Unixtime, Vin, bmpTemperature, bmpPression, bmpAltitude, dhtHumidite, dhtTemperature, tcTemperature, gyLuminosite, distanceVL, GirDirVent, AnemomVitVent\n"; //--> Première ligne enregistrer sur la carte SD, représente l'ordre des valeurs.
-
-// ----------------------------------------------------------------------------
-// Variable globales du deep sleep
-// ----------------------------------------------------------------------------
-unsigned long timeSleep   = 10000000;  //--> 60 secondes de deep sleep (microsec)
-unsigned long startTime   = 0;   //--> Permet de mesurer le temps d'exécution du programme
-unsigned long stopTime    = 0;   //--> Permet de mesurer le temps d'exécution du programme
-unsigned long totSleep    = timeSleep - (stopTime - startTime); //--> Durée total du Deep Sleep ajustée (microsec)
-unsigned long pre_millis  = 0; //--> Initialisation de la variable utiliser pour le delay sans arrêt <No_Stop_Delay (NSD)>
-unsigned long trigger_NSD = 1000; //--> Trigger pour indiquer au delay sans arrêt qui est temps d'effectuer une action. <No_Stop_Delay (NSD)>
 
 // ----------------------------------------------------------------------------
 // Variable globales de la girouette
@@ -284,6 +294,7 @@ struct struct_online
   bool vl   = false;
   bool gnss     = false;
   bool microSd  = false;
+  bool lora = false;
 } online;
 
 // Structure to store function timers
@@ -500,6 +511,8 @@ void loop(){
   readRTC();
 
   sendData(str_donnees(), path);
+
+  printSD_Info();
 
   transmitData();
 

@@ -84,6 +84,10 @@ void readDHT22()
   // Check if sensor initialized successfully
   if (online.dht22)
   {
+
+    for(int i = 0 ; i < 3 ; i++){
+      myDelay(50);
+    }
     Serial.print("Info - Reading DHT22...");
 
     myDelay(250);
