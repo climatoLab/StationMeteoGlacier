@@ -50,6 +50,7 @@
 #include "MovingAverageFloat.h"   // https://github.com/pilotak/MovingAverageFloat
 #include "SparkFun_VL53L1X.h"     // http://librarymanager/All#SparkFun_VL53L1X
 #include "Adafruit_MAX31855.h"    // https://github.com/adafruit/Adafruit-MAX31855-library
+
 #include <Statistic.h>            // https://github.com/RobTillaart/Statistic (v1.0.0)
 #include <Wire.h>                 // Introduit la librarie I2C
 #include <SPI.h>                  // Introduit la libraire pour le SPI
@@ -132,7 +133,15 @@ Adafruit_MAX31855     tc(PIN_MAXCS);
 typedef statistic::Statistic<float,uint32_t,false> StatisticCAL;
 StatisticCAL bmpTempStats;          // Température du BMP388
 StatisticCAL bmpPresStats;          // Pression du BMP388
-StatisticCAL bmpAltStats;          // Altitude du BMP388
+StatisticCAL bmpAltStats;           // Altitude du BMP388
+StatisticCAL dhtTempStats;          // Température du DHT22
+StatisticCAL dhtHumStats;           // Humidité du DHT22
+StatisticCAL tcTempStats;           // Température du Thermocouple
+StatisticCAL gyLuxStats;            // Luminosité du GY49
+StatisticCAL vlDisStats;            // Distance du VL
+StatisticCAL windDirectionStats;    // Direction de la girouette
+StatisticCAL windSpeedStats;        // Vitesse de l'anémomètre
+StatisticCAL voltageStats;          // Altitude du BMP388
 /*
 StatisticCAL temperatureIntStats;  // Internal temperature
 StatisticCAL humidityIntStats;     // Internal humidity
@@ -148,8 +157,9 @@ StatisticCAL vStats;               // Wind north-south wind vector component (v)
 // ----------------------------------------------------------------------------
 // Variables de contrôles
 // ----------------------------------------------------------------------------
-  uint16_t espSleepTime = 10; // Temps du deep sleep en secondes
-  uint16_t timeout_LoRa = 20; // Timeout du LoRa en secondes (Défaut : 20)
+  uint16_t espSleepTime           = 10; // Temps du deep sleep en secondes
+  unsigned int  averageInterval   = 6 ; // Nombres de données à réaliser la moyenne.
+  uint16_t timeout_LoRa           = 20; // Timeout du LoRa en secondes (Défaut : 20)
   
 // ----------------------------------------------------------------------------
 // Variable globales du deep sleep
@@ -206,11 +216,13 @@ bool transmissionTerminee               = false;
 uint32_t ToAStart                       = 0;
 RTC_DATA_ATTR uint32_t  LoRaTimeOnAir   = 0; //Variable qui doit persister
 RTC_DATA_ATTR uint16_t iterationRTC;
+RTC_DATA_ATTR uint16_t iterationRTC_LoRa;
+RTC_DATA_ATTR uint16_t sampleCounter;
 
 // ----------------------------------------------------------------------------
 // Variable globales de la nomenclature du fichier .TXT
 // ----------------------------------------------------------------------------
-String path         = "/data.txt"; //--> Chemin emprunter pour enregistrer les données sur la carte SD.
+const char* path         = "/data.txt"; //--> Chemin emprunter pour enregistrer les données sur la carte SD.
 // À intégrer dans la structure des données
 String labelData    = "Unixtime, Vin, bmpTemperature, bmpPression, bmpAltitude, dhtHumidite, dhtTemperature, tcTemperature, gyLuminosite, distanceVL, GirDirVent, AnemomVitVent\n"; //--> Première ligne enregistrer sur la carte SD, représente l'ordre des valeurs.
 
@@ -238,12 +250,23 @@ float lastrps                         = 1; // Permet d'avoir un affichage initia
 // ----------------------------------------------------------------------------
 // Déclaration de variables globales
 // ----------------------------------------------------------------------------
-float bmpTemperatureC         = 0.0;
-float bmpPressionHPa          = 0.0;
-float bmpAltitude             = 0.0;   
-int windDirection = 0; 
-int windSpeed = 0;
+float bmpTemperatureC           = 0.0;
+float bmpPressionHPa            = 0.0;
+float bmpAltitude               = 0.0;  
+float dhtTemperatureC           = 0.0;
+int dhtHumidite                 = 0;
+float tcTemperatureC            = 0.0;
+unsigned long gy49LuminositeLux = 0;
+unsigned int vlDistanceMM       = 0;
+float Vin                       = 0.0; 
+int windDirection               = 0; 
+int windSpeed                   = 0;
+   
 
+// ----------------------------------------------------------------------------
+// Drapeau booléen
+// ----------------------------------------------------------------------------
+bool flag_initSD = false;
 // ----------------------------------------------------------------------------
 // Structures et unions
 // ----------------------------------------------------------------------------
@@ -348,117 +371,6 @@ void fillInData(void) {
   moSbdMessage.hdop = 5;
   moSbdMessage.transmitStatus = 1;
 }
-
-//-----------------------------------------------------------------------
-*/
-
-/*
-
-
-void setup() {
-  startTime = micros();
-  Serial.begin(115200);
-  //while (!Serial);
-  i2c_init_(); //--> initialisation des pins i2c.
-  initLibs(path, labelData); //--> initialisation des objets.
-  //Initialise le VL53L1X
-  init_VL();
-
-  //Initialise l'anémomètre
-  pinMode(WindSensorPin, INPUT);
-  attachInterrupt(digitalPinToInterrupt(WindSensorPin), isr_rotation, FALLING);
-  lastInterrupt = millis();
-  //Initialise la girouette
-  pinMode(34, OUTPUT);
-  digitalWrite(34, HIGH);
-
-  Serial.println("LoRa Sender");
-
-  //setup LoRa transceiver module
-  LoRa.setPins(ss, rst, dio0);
-
-  //replace the freq LoRa.begin(freq) argument with your location's frequency
-  //Voir la note ci-haut à la def BAND
-  Serial.println("Initializing");
-  while (!LoRa.begin(BAND)) {
-    Serial.print(".");
-    delay(500);
-  }
-  Serial.println(".");
-  // Change sync word to match the receiver
-  // The sync word assures you don't get LoRa messages from other LoRa transceivers
-  // ranges from 0-0xFF
-  LoRa.setSyncWord(LoRasyncWord);
-  LoRa.enableCrc();
-  //The spreading factor (SF) impacts the communication performance of LoRa, which uses an SF between 7 and 12. A larger SF increases the time on air, which increases energy consumption, reduces the data rate, and improves communication range. For successful communication, as determined by the SF, the modulation method must correspond between a transmitter and a receiver for a given packet.
-  LoRa.setSpreadingFactor(LoRaSF);
-  LoRa.setSignalBandwidth(LoRaSB);
-  LoRa.setCodingRate4(LoRaCR);
-
-  LoRa.onTxDone(onTxDone);
-
-
-  Serial.println("LoRa Initializing OK!");
-  //Serial.println("Dumping RFM95 registers:");
-  //LoRa.dumpRegisters(Serial);
-  //Serial.println("\nEnd dumping RFM95 registers.");
-  Serial.println("Current config:");
-  Serial.print("SF=0x");
-  //Serial.println(LoRa.getSpreadingFactor(),HEX);
-  Serial.print("BW=");
-  //Serial.println(LoRa.getSignalBandwidth());
-
-}
-
-void loop() {
-  fillInData(); //Met à jour les données
-  sendData(str_donnees(), path); //--> envoi des données vers la carte SD.
-  Serial.print("Sending packet: ");
-  Serial.print(moSbdMessage.iterationCounter);
-  Serial.print("  of len=");
-  Serial.println(sizeof(moSbdMessage));
-
-  moSbdMessage.transmitDuration = (LoRaTimeOnAir/1000UL);   //Met à jour la durée de la transmission du paquet
-  moSbdMessage.iterationCounter = iterationRTC;  //Met à jour le nombre d'itérations depuis le début du programme
-  //Send LoRa packet to receiver
-  LoRa.beginPacket();
-  LoRa.write(moSbdMessage.bytes, sizeof(moSbdMessage));  //Clef pour la transmission "binaire"
-  ToAStart = micros();
-  LoRa.endPacket(true);
-
-  Serial.println("\nTempérature du BMP388 (°C) = " + String(moSbdMessage.bmpTemperatureC));
-  Serial.println("Température du DHT22 (°C) = " + String(moSbdMessage.dhtTemperatureC));
-  Serial.println("Température du thermocouple (°C) = " + String(moSbdMessage.tcTemperatureC));
-  Serial.println("Pression (hPa) = " + String(moSbdMessage.bmpPressionHPa));
-  Serial.println("Humidité du DHT22 (%) = " + String( moSbdMessage.dhtHumidite));
-  Serial.println("Distance du VL53L1X (mm) : " + String(moSbdMessage.vlDistanceMM));
-  Serial.println("Luminosité (lux) : " + String(moSbdMessage.gy49LuminositeLux));
-  Serial.println("Altitude : " + String(moSbdMessage.bmpAltitude));
-  Serial.println("Sortie analogique de la girouette = " + String(moSbdMessage.GirValPot));
-  Serial.println("Vitesse de vent de l'anémomètre = " + String(moSbdMessage.windSpeed));
-  Serial.println("Tension du Vin (V) : " + String(moSbdMessage.Vin));
-  Serial.println("TransmitDuration = " + String(moSbdMessage.transmitDuration));
-  Serial.println("TransmitStatus = " + String(moSbdMessage.transmitStatus));
-  Serial.println("IterationCounter = " + String(moSbdMessage.iterationCounter) + "\n");
-  unsigned long cur_millis = millis(); //--> indique la valeur actuel des millis()
-
-  int compteur = 50;
-  while (!transmissionTerminee && compteur > 0) {
-    compteur--;
-    delay(100);
-  }
-
-  if (compteur <= 0) {
-    Serial.println("Le flag de transmission a échoué");
-  }
-
-  stopTime = micros();
-  iterationRTC++;
-  //if(cur_millis - pre_millis >= trigger_NSD){ //--> Condition que le trigger_NSD est respecter en rapport avec la différence des millis actuel et de l'ancienne boucle.
-  //pre_millis = cur_millis;  //--> ajustement inutile puisque le code se recompile (à voir)
-  esp_deep_sleep(totSleep); //--> Entre en mode deep sleep pour une durée de x microsecondes
-  //}
-}
 */
 
 void setup(){
@@ -499,27 +411,45 @@ void setup(){
 
 void loop(){
 
-  Serial.println(ESP.getFreeHeap());
-  readBmp388();
-  readDHT22();
-  readTC();
-  readGY49();
-  readVL();
-  readWindDirection();
-  readWindSpeed();
-  readVin();
-  readRTC();
-
-  sendData(str_donnees(), path);
-
-  printSD_Info();
-
-  transmitData();
-
-  Serial.println(ESP.getFreeHeap());
+  if (flag_initSD){
+    
+    Serial.println(ESP.getFreeHeap());
+    updateIteration();
+    readBmp388();
+    readDHT22();
+    readTC();
+    readGY49();
+    readVL();
+    readWindDirection();
+    readWindSpeed();
+    readVin();
+    readRTC();
   
-  printAcquisition();
+    Serial.println(sampleCounter);
   
+    sendData(str_donnees(), path);
+    printAcquisition();
+  
+    // Check if number of samples collected has been reached and calculate statistics (if enabled)
+    if ((sampleCounter == averageInterval))
+    {
+      updateIterationLoRa();
+      calculateStats(); // Calcul des statistiques
+      transmitData(); // Transmet via LoRa
+      printStats();
+      sampleCounter = 0; // Reset sample counter
+    }
+    
+    lastLine(SD, path);
+  
+    printSD_Info();
+
+    Serial.println(ESP.getFreeHeap());
+  
+    sampleCounter++;
+  }
+
+    
   esp_deep_sleep(totSleep); //--> Entre en mode deep sleep pour une durée de x microsecondes
   
 }

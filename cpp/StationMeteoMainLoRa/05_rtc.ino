@@ -40,3 +40,13 @@ String getTimeRTC(bool heureAvance = false) { //Fonction qui retourne la valeur 
 void readRTC(){
   moSbdMessage.unix = rtc.now().unixtime();
 }
+
+void updateIteration(){
+  moSbdMessage.iterationCounter = iterationRTC;  //Met à jour le nombre d'itérations depuis le début du programme
+  iterationRTC++;
+}
+
+void updateIterationLoRa(){
+  moSbdMessage.iterationCounter = iterationRTC_LoRa;
+  iterationRTC_LoRa++;
+}

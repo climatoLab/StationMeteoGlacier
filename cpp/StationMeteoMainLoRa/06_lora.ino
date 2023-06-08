@@ -65,7 +65,7 @@ void loraConfig(){
 
 void transmitData(){
   Serial.print("Sending packet: ");
-  Serial.print(String(iterationRTC));
+  Serial.print(String(moSbdMessage.iterationCounter));
   Serial.print(" of len = ");
   Serial.println(sizeof(moSbdMessage));
 
@@ -74,7 +74,6 @@ void transmitData(){
   moSbdMessage.sender = localAddress;
 
   moSbdMessage.transmitDuration = (LoRaTimeOnAir/1000UL);   //Met à jour la durée de la transmission du paquet
-  moSbdMessage.iterationCounter = iterationRTC;  //Met à jour le nombre d'itérations depuis le début du programme
   //Send LoRa packet to receiver
   LoRa.beginPacket();
   LoRa.write(moSbdMessage.bytes, sizeof(moSbdMessage));  //Clef pour la transmission "binaire"
@@ -93,5 +92,5 @@ void transmitData(){
     Serial.println("Le flag de transmission a échoué");
   }
   stopTime = micros();
-  iterationRTC++;
+
 }

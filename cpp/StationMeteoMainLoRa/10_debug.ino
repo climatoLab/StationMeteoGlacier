@@ -40,11 +40,35 @@ void printAcquisition(){
   Serial.println("Données enregistrées");
   printLine();
   
+  Serial.println("Température du BMP388 (°C)          = " + String(bmpTemperatureC));
+  Serial.println("Pression du BMP388 (hPa)            = " + String(bmpPressionHPa));
+  Serial.println("Altitude du BMP388 (m)              = " + String(bmpAltitude));
+  Serial.println("Température du DHT22 (°C)           = " + String(dhtTemperatureC));
+  Serial.println("Humidité du DHT22 (%)               = " + String(dhtHumidite));
+  Serial.println("Température du thermocouple (°C)    = " + String(tcTemperatureC));
+  Serial.println("Luminosité (lux)                    = " + String(gy49LuminositeLux));
+  Serial.println("Distance du VL53L1X (mm)            = " + String(vlDistanceMM));
+  Serial.println("Point cardinal de la girouette      = " + String(windDirection));
+  Serial.println("Vitesse de vent de l'anémomètre     = " + String(windSpeed));
+  Serial.println("Tension du Vin (V)                  = " + String(Vin));
+  Serial.println("IterationCounter                    = " + String(moSbdMessage.iterationCounter));
+
+  printLine();
+  Serial.print("Chaine de données envoyée sur la carte uSD\n"+str_donnees());
+  printLine();
+}
+
+void printStats(){
+
+  printLine();
+  Serial.println("Statistiques");
+  printLine();
+  
   Serial.println("Température du BMP388 (°C)          = " + String(moSbdMessage.bmpTemperatureC));
   Serial.println("Pression du BMP388 (hPa)            = " + String(moSbdMessage.bmpPressionHPa));
   Serial.println("Altitude du BMP388 (m)              = " + String(moSbdMessage.bmpAltitude));
   Serial.println("Température du DHT22 (°C)           = " + String(moSbdMessage.dhtTemperatureC));
-  Serial.println("Humidité du DHT22 (%)               = " + String( moSbdMessage.dhtHumidite));
+  Serial.println("Humidité du DHT22 (%)               = " + String(moSbdMessage.dhtHumidite));
   Serial.println("Température du thermocouple (°C)    = " + String(moSbdMessage.tcTemperatureC));
   Serial.println("Luminosité (lux)                    = " + String(moSbdMessage.gy49LuminositeLux));
   Serial.println("Distance du VL53L1X (mm)            = " + String(moSbdMessage.vlDistanceMM));
@@ -54,8 +78,7 @@ void printAcquisition(){
   Serial.println("IterationCounter                    = " + String(moSbdMessage.iterationCounter));
 
   printLine();
-  Serial.print("Chaine de données envoyée sur la carte uSD\n"+str_donnees());
-  printLine();
+
 }
 
 void printSD_Info(){
@@ -79,7 +102,7 @@ void printSD_Info(){
   Serial.print("Taille de la carte micro SD:");   printTab(1);    Serial.println(String(SD.cardSize()));
   Serial.print("Espace total : ");                printTab(1);    Serial.println(String(SD.totalBytes()));
   Serial.print("Espace restant : ");              printTab(1);    Serial.println(String(SD.usedBytes()));
-  Serial.printf("Used space: %lluMB\n", SD.usedBytes() / (1024 * 1024));
+  
     
   printLine();
   

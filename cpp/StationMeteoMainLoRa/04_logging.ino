@@ -3,25 +3,27 @@
 // ----------------------------------------------------------------------------
 String str_donnees() { //--> Met dans une variable String la structure de nos données
   char vir = ',';
-  String s_msg =   String(moSbdMessage.unix) + vir
-                 + String(moSbdMessage.Vin) + vir
-                 + String(moSbdMessage.bmpTemperatureC) + vir
-                 + String(moSbdMessage.bmpPressionHPa) + vir
-                 + String(moSbdMessage.bmpAltitude) + vir
-                 + String(moSbdMessage.dhtHumidite) + vir
-                 + String(moSbdMessage.dhtTemperatureC) + vir
-                 + String(moSbdMessage.tcTemperatureC) + vir
-                 + String(moSbdMessage.gy49LuminositeLux) + vir
-                 + String(moSbdMessage.vlDistanceMM) + vir
-                 + String(moSbdMessage.windDirection) + vir
-                 + String(moSbdMessage.windSpeed) + "\n";
+  String s_msg = 
+                   String(moSbdMessage.iterationCounter) + vir  
+                 + String(moSbdMessage.unix) + vir
+                 + String(Vin) + vir
+                 + String(bmpTemperatureC) + vir
+                 + String(bmpPressionHPa) + vir
+                 + String(bmpAltitude) + vir
+                 + String(dhtHumidite) + vir
+                 + String(dhtTemperatureC) + vir
+                 + String(tcTemperatureC) + vir
+                 + String(gy49LuminositeLux) + vir
+                 + String(vlDistanceMM) + vir
+                 + String(windDirection) + vir
+                 + String(windSpeed) + "\n";
   return s_msg;
 }
 
 // ----------------------------------------------------------------------------
 // Fonctions créer pour l'enregistrement des données et l'initialisation
 // ----------------------------------------------------------------------------
-void init_SD(String path, String labelData) {
+void init_SD(const char* path, String labelData) {
   if (!SD.begin(15)) {
     Serial.println("Échec de montage de la carte SD !");    //montage?
     return;
@@ -53,8 +55,8 @@ void init_SD(String path, String labelData) {
     File file = SD.open(path);
     //Si le fichier donnee.txt n'existe pas sur la carte SD
     if (!file) {
-      Serial.println("Le fichier " + path + " n'existe pas !");
-      Serial.println("Écriture du nom des colonnes dans le fichier "+ path +" ...");
+      Serial.println("Le fichier " + String(path) + " n'existe pas !");
+      Serial.println("Écriture du nom des colonnes dans le fichier "+ String(path) +" ...");
       //Écriture du nom de chaque colonne pour le "logging" des données
 
       writeFile(SD, path, labelData.c_str());
@@ -62,15 +64,16 @@ void init_SD(String path, String labelData) {
       break;
     }
     else {
-      Serial.println("Le fichier " + path + " existe déjà !");
+      Serial.println("Le fichier " + String(path) + " existe déjà !");
       //Ferme le fichier
       i = true;
       file.close();
     }
   }
+  flag_initSD = i;
 }
 
-bool sendData(String msg, String path){
+bool sendData(String msg, const char* path){
   appendFile(SD,path,msg.c_str());
   return true;
 }
@@ -144,7 +147,7 @@ void readFile(fs::FS &fs, const char * path){
     file.close();
 }
 
-void writeFile(fs::FS &fs, String path, String message){
+void writeFile(fs::FS &fs, const char * path, String message){
     Serial.printf("Writing file: %s\n", path);
 
     File file = fs.open(path, FILE_WRITE);
@@ -160,7 +163,7 @@ void writeFile(fs::FS &fs, String path, String message){
     file.close();
 }
 
-void appendFile(fs::FS &fs, String path, String message){
+void appendFile(fs::FS &fs, const char * path, String message){
     Serial.printf("Appending to file: %s\n", path);
 
     File file = fs.open(path, FILE_APPEND);
@@ -234,4 +237,24 @@ void testFileIO(fs::FS &fs, const char * path){
     end = millis() - start;
     Serial.printf("%u bytes written for %u ms\n", 2048 * 512, end);
     file.close();
+}
+void lastLine(fs::FS &fs, const char * path){
+  int msg;
+    File file = SD.open(path);
+  if (file) {
+    uint32_t lineStart = 0;
+    while (file.available()) {
+      lineStart = file.position();
+      if (!file.find((char*) "\n"))
+        break;
+    }
+    file.seek(lineStart);
+    while (file.available()) {
+        msg = file.read();
+        Serial.write(msg);
+    }
+    file.close();
+  } else {
+    Serial.println("error opening datalog.txt");
+  }
 }

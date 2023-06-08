@@ -37,7 +37,8 @@ void readVin() {
 
   //Ramène la tension dans le domaine 0-5Volts
   tensionReelle_VinExt = FACTEUR_CONV_VIN_EXT * moyenneVin_VinExt;
-  moSbdMessage.Vin = tensionReelle_VinExt * 100;
+  Vin = tensionReelle_VinExt;
+  voltageStats.add(Vin);
 }
 
 // Délai non-bloquant (milliseconds)

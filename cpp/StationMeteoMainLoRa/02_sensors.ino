@@ -34,9 +34,13 @@ void readBmp388()
 
     myDelay(250);
 
-    moSbdMessage.bmpTemperatureC   = bmp.readTemperature() * 100;
-    moSbdMessage.bmpPressionHPa    = bmp.readPressure() / 100;
-    moSbdMessage.bmpAltitude       = bmp.readAltitude(SEALEVELPRESSURE_HPA);
+    bmpTemperatureC   = bmp.readTemperature();
+    bmpPressionHPa    = bmp.readPressure() / 100;
+    bmpAltitude       = bmp.readAltitude(SEALEVELPRESSURE_HPA);
+
+    bmpTempStats.add(bmpTemperatureC);         
+    bmpPresStats.add(bmpPressionHPa);          
+    bmpAltStats.add(bmpAltitude);           
     
     Serial.println("done.");
   }
@@ -92,8 +96,11 @@ void readDHT22()
 
     myDelay(250);
 
-    moSbdMessage.dhtTemperatureC   = dht.readTemperature() * 100;
-    moSbdMessage.dhtHumidite       = dht.readHumidity();
+    dhtTemperatureC   = dht.readTemperature();
+    dhtHumidite       = dht.readHumidity();
+
+    dhtTempStats.add(dhtTemperatureC);         
+    dhtHumStats.add(dhtHumidite);
 
     Serial.println("done.");
   }
@@ -141,7 +148,9 @@ void readTC()
 
     myDelay(250);
 
-    moSbdMessage.tcTemperatureC = tc.readCelsius() * 100;
+    tcTemperatureC = tc.readCelsius();
+
+    tcTempStats.add(tcTemperatureC);
   
     Serial.println("done.");
   }
@@ -189,8 +198,10 @@ void readGY49()
 
     myDelay(250);
 
-    moSbdMessage.gy49LuminositeLux = gy.getLux();
-  
+    gy49LuminositeLux = gy.getLux();
+
+    gyLuxStats.add(gy49LuminositeLux);
+    
     Serial.println("done.");
   }
   else
@@ -240,7 +251,9 @@ void readVL()
     while (!vl.checkForDataReady()){
       delay(1);
     }
-    moSbdMessage.vlDistanceMM = vl.getDistance(); //met en variable l'acquisition de la donnée
+    vlDistanceMM = vl.getDistance(); //met en variable l'acquisition de la donnée
+
+    vlDisStats.add(vlDistanceMM);
     
     vl.clearInterrupt();
     vl.stopRanging();
@@ -268,7 +281,9 @@ void readWindDirection(){
     uint16_t adc_WindDirectionValue = analogRead(PIN_WIND_DIRECTION);
     
     //roseDESvents(moSbdMessage.GirValPot);
-    moSbdMessage.windDirection = windCompass(adc_WindDirectionValue);
+    windDirection = windCompass(adc_WindDirectionValue);
+
+    windDirectionStats.add(windDirection);
   }  
 }
 
@@ -433,7 +448,7 @@ void readWindSpeed(){
     //timerDisplay = millis();
   }
 
-  moSbdMessage.windSpeed = windSpeed * 100;
+  windSpeedStats.add(windSpeed);
   //return moSbdMessage.windSpeed;
   //Serial.print(Rotations); Serial.print("\t\t");
   //Serial.println(moSbdMessage.windSpeed);  
