@@ -154,7 +154,7 @@ StatisticCAL vlDisStats;            // Distance du VL
 StatisticCAL windDirectionStats;    // Direction de la girouette
 StatisticCAL windSpeedStats;        // Vitesse de l'anémomètre
 StatisticCAL voltageStats;          // Altitude du BMP388
-StatisticCAL rainCountStats;          // Altitude du BMP388
+StatisticCAL rainHeightStats;          // Altitude du BMP388
 
 /*
 StatisticCAL temperatureIntStats;  // Internal temperature
@@ -248,7 +248,7 @@ RTC_DATA_ATTR uint16_t sampleCounter;
 // ----------------------------------------------------------------------------
 const char* path         = "/data.txt"; //--> Chemin emprunter pour enregistrer les données sur la carte SD.
 // À intégrer dans la structure des données
-String labelData    = "Unixtime, Vin, bmpTemperature, bmpPression, bmpAltitude, dhtHumidite, dhtTemperature, tcTemperature, gyLuminosite, distanceVL, GirDirVent, AnemomVitVent\n"; //--> Première ligne enregistrer sur la carte SD, représente l'ordre des valeurs.
+//String labelData    = "Unixtime, Vin, bmpTemperature, bmpPression, bmpAltitude, dhtHumidite, dhtTemperature, tcTemperature, gyLuminosite, distanceVL, GirDirVent, AnemomVitVent\n"; //--> Première ligne enregistrer sur la carte SD, représente l'ordre des valeurs.
 
 // ----------------------------------------------------------------------------
 // Variable globales de la girouette
@@ -328,11 +328,11 @@ typedef union
     int16_t  bmpAltitude;      //                                (2 bytes)
     uint16_t windDirection;    //                                (1 bytes)
     uint16_t windSpeed;//                                        (2 bytes)
-    uint16_t rainHeight;       //                                (2 bytes)
-    uint16_t Vin;              //                                (2 byte) * 100
-    int32_t  latitudeGPS;      //                                (4 byte)
-    int32_t  longitudeGPS;     //                                (4 byte)
-    int32_t  altitudeGPS;      //                                (4 byte)
+    uint16_t rainHeight;       //                                (2 bytes) * 100
+    uint16_t Vin;              //                                (2 bytes) * 100
+    int32_t  latitudeGPS;      //                                (4 bytes)
+    int32_t  longitudeGPS;     //                                (4 bytes)
+    int32_t  altitudeGPS;      //                                (4 bytes)
     uint8_t  satellites;       // # of satellites                (1 byte)
     uint16_t hdop;             // HDOP                           (2 bytes)
     uint16_t transmitDuration; // Previous transmission duration (2 bytes)
@@ -439,7 +439,7 @@ void setup(){
   Wire.begin();
   Wire.setClock(400000); // Set I2C clock speed to 400 kHz
 
-  init_SD(path, labelData);
+  init_SD(path, labelData());
   init_RTC();
   
   loraConfig();

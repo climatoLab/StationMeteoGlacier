@@ -79,6 +79,7 @@ void printStats(){
   Serial.println("Distance du VL53L1X (mm)            = " + String(moSbdMessage.vlDistanceMM));
   Serial.println("Point cardinal de la girouette      = " + String(moSbdMessage.windDirection));
   Serial.println("Vitesse de vent de l'anémomètre     = " + String(moSbdMessage.windSpeed));
+  Serial.println("Hauteur de la pluie                 = " + String(moSbdMessage.rainHeight));
   Serial.println("Tension du Vin (V)                  = " + String(moSbdMessage.Vin));
   Serial.println("IterationCounter                    = " + String(moSbdMessage.iterationCounter));
 

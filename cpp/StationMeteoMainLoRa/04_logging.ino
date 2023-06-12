@@ -4,19 +4,54 @@
 String str_donnees() { //--> Met dans une variable String la structure de nos données
   char separator = ',';
   String s_msg = 
-                   String(moSbdMessage.iterationCounter) + separator  
-                 + String(moSbdMessage.unix) + separator
-                 + String(Vin) + separator
-                 + String(bmpTemperatureC) + separator
-                 + String(bmpPressionHPa) + separator
-                 + String(bmpAltitude) + separator
-                 + String(dhtHumidite) + separator
-                 + String(dhtTemperatureC) + separator
-                 + String(tcTemperatureC) + separator
-                 + String(gy49LuminositeLux) + separator
-                 + String(vlDistanceMM) + separator
-                 + String(windDirection) + separator
-                 + String(windSpeed) + "\n";
+                   String(moSbdMessage.iterationCounter)    + separator  
+                 + String(moSbdMessage.unix)                + separator
+                 + getDateRTC()                             + separator
+                 + getTimeRTC()                             + separator
+                 + String(Vin)                              + separator
+                 + String(bmpTemperatureC)                  + separator
+                 + String(bmpPressionHPa)                   + separator
+                 + String(bmpAltitude)                      + separator
+                 + String(dhtHumidite)                      + separator
+                 + String(dhtTemperatureC)                  + separator
+                 + String(tcTemperatureC)                   + separator
+                 + String(gy49LuminositeLux)                + separator
+                 + String(vlDistanceMM)                     + separator
+                 + String(windDirection)                    + separator
+                 + String(windSpeed)                        + separator 
+                 + String(moSbdMessage.rainHeight)          + separator
+                 + String(latitudeGPS)                      + separator
+                 + String(longitudeGPS)                     + separator
+                 + String(altitudeGPS)                      + separator
+                 + String(satellites)                       + separator
+                 + "\n";
+  return s_msg;
+}
+
+String labelData() { //--> Met dans une variable String la structure de nos données
+  String separator = ",";
+  String s_msg = 
+                   "#"                    + separator  
+                 + "Unixtime"             + separator
+                 + "Date"                 + separator
+                 + "Time"                 + separator
+                 + "Battery(V)"           + separator
+                 + "BMPTemp(C)"           + separator
+                 + "BMPPressure(HPa)"     + separator
+                 + "BMPHeight(m) "        + separator
+                 + "DHTHumidity(%)"       + separator
+                 + "DHTTemp(C)"           + separator
+                 + "TCTemp(C)"            + separator
+                 + "GYLight(Lux)"         + separator
+                 + "VLDistance(mm)"       + separator
+                 + "WindDirection(N=0)"   + separator
+                 + "WindSpeed(m/s)"       + separator
+                 + "RainHeight"           + separator
+                 + "LatitudeGPS"          + separator
+                 + "LongitudeGPS"         + separator
+                 + "AltitudeGPS"          + separator
+                 + "Satellites"           + separator
+                 + "\n";
   return s_msg;
 }
 

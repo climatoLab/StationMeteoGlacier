@@ -11,7 +11,8 @@ void calculateStats()
   moSbdMessage.gy49LuminositeLux      = gyLuxStats.average();            
   moSbdMessage.vlDistanceMM           = vlDisStats.average();            
   moSbdMessage.windDirection          = windDirectionStats.average();    
-  moSbdMessage.windSpeed              = windSpeedStats.average();        
+  moSbdMessage.windSpeed              = windSpeedStats.average();   
+  moSbdMessage.rainHeight             = rainHeightStats.average() * 100;     
   moSbdMessage.Vin                    = voltageStats.average() * 100;      
         
   // Clear all statistics objects

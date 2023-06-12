@@ -32,7 +32,7 @@ String getDateRTC(){
   rtc.now().toString(date); //Conversion de la valeur actuel en String.
   return date;
 }
-String getTimeRTC(bool heureAvance = false) { //Fonction qui retourne la valeur actuel du RTC
+String getTimeRTC() { //Fonction qui retourne la valeur actuel du RTC
   char rTime[9] =  "hh:mm:ss"; //Format
   rtc.now().toString(rTime); //Conversion de la valeur actuel en String.
   return rTime;

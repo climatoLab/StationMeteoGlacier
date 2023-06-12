@@ -540,10 +540,6 @@ void configurePCF8583(){
 
 void readRain(){
   
-  
-  
-  
-  
   configurePCF8583();
 
   //Lecture de la valeur du compteur
@@ -551,9 +547,11 @@ void readRain(){
 
   
   
-  moSbdMessage.rainHeight = rainCount;
+  moSbdMessage.rainHeight = rainCount * rain_CF;
 
-  hourRainCount();
+  rainHeightStats.add(moSbdMessage.rainHeight);
+
+  //hourRainCount();
   
   //Serial.println(rainCount);
   PCF8583_clr_cntr(PCF_I2C_ADDR);
@@ -586,20 +584,20 @@ void hourRainCount(){
   }
   
   
-  //rainCountStats.add(rainCount);
+  //rainHeightStats.add(rainCount);
   
   if(iterationRTC_rain >= 6){ //sec2hour/espSleepTime
     
     for (int i = 0; i <= 6; i++){ //sec2hour/espSleepTime
       
-      rainCountStats.add(rainStats[i].average());
+      rainHeightStats.add(rainStats[i].average());
       Serial.println(rainStats[i].average());
     }
-    moSbdMessage.rainHeight = rainCountStats.average();
+    moSbdMessage.rainHeight = rainHeightStats.average();
     Serial.println("****");
-    Serial.println(rainCountStats.average());
+    Serial.println(rainHeightStats.average());
     Serial.println("****");
-    rainCountStats.clear();
+    rainHeightStats.clear();
   }
   
   iterationRTC_rain++;
