@@ -50,3 +50,6 @@ void updateIterationLoRa(){
   moSbdMessage.iterationCounter = iterationRTC_LoRa;
   iterationRTC_LoRa++;
 }
+void updateIterationRain(){
+  iterationRTC_rain++;
+}

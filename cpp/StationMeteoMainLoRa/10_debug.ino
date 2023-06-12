@@ -50,8 +50,13 @@ void printAcquisition(){
   Serial.println("Distance du VL53L1X (mm)            = " + String(vlDistanceMM));
   Serial.println("Point cardinal de la girouette      = " + String(windDirection));
   Serial.println("Vitesse de vent de l'anémomètre     = " + String(windSpeed));
+  Serial.println("Rain counter                        = " + String(rainCount));
   Serial.println("Tension du Vin (V)                  = " + String(Vin));
   Serial.println("IterationCounter                    = " + String(moSbdMessage.iterationCounter));
+  Serial.println("Latitude                            = " + String(moSbdMessage.latitudeGPS));
+  Serial.println("Longitude                           = " + String(moSbdMessage.longitudeGPS));
+  Serial.println("Altitude                            = " + String(moSbdMessage.altitudeGPS));
+  Serial.println("Satellites                          = " + String(moSbdMessage.satellites));
 
   printLine();
   Serial.print("Chaine de données envoyée sur la carte uSD\n"+str_donnees());

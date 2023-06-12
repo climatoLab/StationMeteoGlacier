@@ -2,20 +2,20 @@
 // Enregistre toutes les données sous une chaine de caractères
 // ----------------------------------------------------------------------------
 String str_donnees() { //--> Met dans une variable String la structure de nos données
-  char vir = ',';
+  char separator = ',';
   String s_msg = 
-                   String(moSbdMessage.iterationCounter) + vir  
-                 + String(moSbdMessage.unix) + vir
-                 + String(Vin) + vir
-                 + String(bmpTemperatureC) + vir
-                 + String(bmpPressionHPa) + vir
-                 + String(bmpAltitude) + vir
-                 + String(dhtHumidite) + vir
-                 + String(dhtTemperatureC) + vir
-                 + String(tcTemperatureC) + vir
-                 + String(gy49LuminositeLux) + vir
-                 + String(vlDistanceMM) + vir
-                 + String(windDirection) + vir
+                   String(moSbdMessage.iterationCounter) + separator  
+                 + String(moSbdMessage.unix) + separator
+                 + String(Vin) + separator
+                 + String(bmpTemperatureC) + separator
+                 + String(bmpPressionHPa) + separator
+                 + String(bmpAltitude) + separator
+                 + String(dhtHumidite) + separator
+                 + String(dhtTemperatureC) + separator
+                 + String(tcTemperatureC) + separator
+                 + String(gy49LuminositeLux) + separator
+                 + String(vlDistanceMM) + separator
+                 + String(windDirection) + separator
                  + String(windSpeed) + "\n";
   return s_msg;
 }

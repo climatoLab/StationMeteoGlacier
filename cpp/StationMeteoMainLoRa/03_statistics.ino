@@ -1,6 +1,4 @@
 // Calculate statistics
-//Work in progress
-
 void calculateStats()
 {
   // Write data to union
@@ -14,7 +12,8 @@ void calculateStats()
   moSbdMessage.vlDistanceMM           = vlDisStats.average();            
   moSbdMessage.windDirection          = windDirectionStats.average();    
   moSbdMessage.windSpeed              = windSpeedStats.average();        
-  moSbdMessage.Vin                    = voltageStats.average() * 100;          
+  moSbdMessage.Vin                    = voltageStats.average() * 100;      
+        
   // Clear all statistics objects
   clearStats();
 

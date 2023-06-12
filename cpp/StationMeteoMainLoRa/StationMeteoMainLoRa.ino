@@ -34,6 +34,9 @@
     //*** v2.7.0 : Ajout d'une adresse destination et source et d'une version de la trame pour communication LoRa
     //*** v2.8.0 : Amélioration du calcul Time on air
     //*** v3.0.0 : Modification de la structure du code
+    //*** v3.1.0 : Ajout des Statistiques
+    //*** v3.2.0 : Ajout capteur de pluie
+    //*** v3.3.0 : Ajout du GPS
 */
 
 // ----------------------------------------------------------------------------
@@ -50,7 +53,8 @@
 #include "MovingAverageFloat.h"   // https://github.com/pilotak/MovingAverageFloat
 #include "SparkFun_VL53L1X.h"     // http://librarymanager/All#SparkFun_VL53L1X
 #include "Adafruit_MAX31855.h"    // https://github.com/adafruit/Adafruit-MAX31855-library
-
+#include <Adafruit_GPS.h>
+#include <SoftwareSerial.h>
 #include <Statistic.h>            // https://github.com/RobTillaart/Statistic (v1.0.0)
 #include <Wire.h>                 // Introduit la librarie I2C
 #include <SPI.h>                  // Introduit la libraire pour le SPI
@@ -65,7 +69,7 @@
 // ----------------------------------------------------------------------------
 // Define version du programme
 // ----------------------------------------------------------------------------
-#define VERSION                 "3.0.0"
+#define VERSION                 "3.3.0"
 
 #define SUPPORTED_FRAME_VERION  0x02
 
@@ -78,6 +82,7 @@
 // Define adresses utilisées
 // ----------------------------------------------------------------------------
 #define ADR_MAX44009            0x4A
+#define PCF_I2C_ADDR            0x50
 
 // ----------------------------------------------------------------------------
 // Define broches et type capteurs
@@ -111,6 +116,10 @@
 //#define rst                     4 
 //#define dio0                    17
 
+//Broches pour la communication GPS
+#define PIN_GPS_TX              27
+#define PIN_GPS_RX              26
+
 //Broche d'activation i2c
 #define PIN_POW_EN              13
 #define PIN_GPS_EN              12 
@@ -127,6 +136,9 @@ MovingAverageFloat    <AVERAGE_BUFFER_SIZE> movA_VinExt;
 SFEVL53L1X            vl;
 Adafruit_MAX31855     tc(PIN_MAXCS);
 
+SoftwareSerial mySerial(PIN_GPS_TX, PIN_GPS_RX);
+Adafruit_GPS GPS(&mySerial);
+
 // ----------------------------------------------------------------------------
 // Objets statistiques
 // ----------------------------------------------------------------------------
@@ -142,6 +154,8 @@ StatisticCAL vlDisStats;            // Distance du VL
 StatisticCAL windDirectionStats;    // Direction de la girouette
 StatisticCAL windSpeedStats;        // Vitesse de l'anémomètre
 StatisticCAL voltageStats;          // Altitude du BMP388
+StatisticCAL rainCountStats;          // Altitude du BMP388
+
 /*
 StatisticCAL temperatureIntStats;  // Internal temperature
 StatisticCAL humidityIntStats;     // Internal humidity
@@ -160,12 +174,14 @@ StatisticCAL vStats;               // Wind north-south wind vector component (v)
   uint16_t espSleepTime           = 10; // Temps du deep sleep en secondes
   unsigned int  averageInterval   = 6 ; // Nombres de données à réaliser la moyenne.
   uint16_t timeout_LoRa           = 20; // Timeout du LoRa en secondes (Défaut : 20)
+  uint16_t timeout_GPS            = 20; // Timeout du LoRa en secondes (Défaut : 20)
   
 // ----------------------------------------------------------------------------
 // Variable globales du deep sleep
 // ----------------------------------------------------------------------------
 unsigned long micro2sec   = 1000000;  //--> Variable de convertion de micro sec à sec.
 unsigned long millis2sec  = 1000;     //--> Variable de convertion de millis sec à sec.
+unsigned long sec2hour    = 3600;
 unsigned long startTime   = 0;   //--> Permet de mesurer le temps d'exécution du programme
 unsigned long stopTime    = 0;   //--> Permet de mesurer le temps d'exécution du programme
 unsigned long totSleep    = (espSleepTime * micro2sec) - (stopTime - startTime); //--> Durée total du Deep Sleep ajustée (microsec)
@@ -209,6 +225,14 @@ const uint8_t LoRaCR          = 5;
 // Pour le NBD <Non-Blocking Delay> du LoRa timeout.
 unsigned long previousMillis_LoRa = 0;
 unsigned long interval_LoRaTimeout = timeout_LoRa * millis2sec;
+
+// ----------------------------------------------------------------------------
+// Variable globales du GPS
+// ----------------------------------------------------------------------------
+// Pour le NBD <Non-Blocking Delay> du GPS timeout.
+unsigned long previousMillis_GPS = 0;
+unsigned long interval_GPSTimeout = timeout_GPS * millis2sec;
+
 // ----------------------------------------------------------------------------
 // Variable globales de TimeOnAir
 // ----------------------------------------------------------------------------
@@ -235,7 +259,6 @@ int delai_capteur_lecture = 250;
 int delai = 0;
 unsigned int adc_WindDirectionValue = 0;
 
-
 // ----------------------------------------------------------------------------
 // Variable globales de l'anémomètre
 // ----------------------------------------------------------------------------
@@ -247,6 +270,15 @@ volatile bool flagISR                 = false;
 float rps                             = 0;
 float lastrps                         = 1; // Permet d'avoir un affichage initiale lors du démarage du code
 
+// ----------------------------------------------------------------------------
+// Variable globales du Rain Gauge
+// ----------------------------------------------------------------------------
+const float rain_CF                   = 0.2794; // [mm/cmpt] // facteur de conversion pour tranformer le nombre de comptes en mm.
+float rainCount                    = 0;  
+uint16_t rainIndex                    = 6;
+
+RTC_DATA_ATTR uint16_t iterationRTC_rain;
+uint16_t iterationPerHour_rain = espSleepTime / sec2hour;
 // ----------------------------------------------------------------------------
 // Déclaration de variables globales
 // ----------------------------------------------------------------------------
@@ -261,6 +293,10 @@ unsigned int vlDistanceMM       = 0;
 float Vin                       = 0.0; 
 int windDirection               = 0; 
 int windSpeed                   = 0;
+float latitudeGPS = 0.0;
+float longitudeGPS =0.0;
+float altitudeGPS =0.0;
+uint8_t satellites =  0;
    
 
 // ----------------------------------------------------------------------------
@@ -291,7 +327,8 @@ typedef union
     uint16_t gy49LuminositeLux;//                                (2 bytes)
     int16_t  bmpAltitude;      //                                (2 bytes)
     uint16_t windDirection;    //                                (1 bytes)
-    uint16_t windSpeed;//                                (2 bytes)
+    uint16_t windSpeed;//                                        (2 bytes)
+    uint16_t rainHeight;       //                                (2 bytes)
     uint16_t Vin;              //                                (2 byte) * 100
     int32_t  latitudeGPS;      //                                (4 byte)
     int32_t  longitudeGPS;     //                                (4 byte)
@@ -301,8 +338,8 @@ typedef union
     uint16_t transmitDuration; // Previous transmission duration (2 bytes)
     uint8_t  transmitStatus;   // Iridium return code            (1 byte)
     uint16_t iterationCounter; // Message counter                (2 bytes)
-  } __attribute__((packed));                           // Total: (48 bytes)
-  uint8_t bytes[48];
+  } __attribute__((packed));                           // Total: (50 bytes)
+  uint8_t bytes[50];
 } SBD_MO_MESSAGE;
 
 SBD_MO_MESSAGE moSbdMessage;
@@ -318,6 +355,7 @@ struct struct_online
   bool gnss     = false;
   bool microSd  = false;
   bool lora = false;
+  bool gps = false;
 } online;
 
 // Structure to store function timers
@@ -422,9 +460,12 @@ void loop(){
     readVL();
     readWindDirection();
     readWindSpeed();
+    readRain();
     readVin();
     readRTC();
-  
+    readGPS();
+    Serial.print(String(online.gps));
+    
     Serial.println(sampleCounter);
   
     sendData(str_donnees(), path);
@@ -439,6 +480,8 @@ void loop(){
       printStats();
       sampleCounter = 0; // Reset sample counter
     }
+
+    
     
     lastLine(SD, path);
   
