@@ -18,8 +18,6 @@ Le document est une copie du ReadMe de la Station météo version école alors b
 -->
 
 <!-- PROJECT LOGO -->
-![StationMeteo_Glacier](https://github.com/climatoLab/StationMeteoGlacier/assets/102256913/05be69f3-6a17-4873-bcb7-8a2c5af22489)
-
 
 <br />
 <div align="center">
@@ -28,6 +26,9 @@ Le document est une copie du ReadMe de la Station météo version école alors b
   </a>
 
   <h3 align="center">Station météo glacier</h3>
+
+  ![image](https://github.com/climatoLab/StationMeteoGlacier/assets/102256913/163adbbc-9400-4adc-8e8e-0f295ac8007d)
+
 
   <p align="center">
     Une station météo !
