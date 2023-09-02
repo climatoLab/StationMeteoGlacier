@@ -25,6 +25,22 @@ https://thingsboard.cloud/dashboard/17a06570-f024-11ed-97ca-e57c88951dd5?publicI
 La branche StationMeteoGlacier contient un programme Arduino qui fonctionne avec différents capteurs et un enregistreur de données qui a été développé en même temps que le projet. Le programme a été conçu pour fonctionner avec le ESP32 Firebeetle de DFRobot.
 
 ## Librairies utilisées
+"MovingAverageFloat" by Pavel Slama
+"tgp Decodeur" by Technologie du génie physique
+"Adafruit LSM303 Accel" by Adafruit  
+	Installer les dépendances :
+	=> "Adafruit Unified Sensor"
+	=> "Adafruit Bus IO"
+"SparkFun VL53L1X 4m Laser Distance Sensor"
+"Adafruit GPS Library" by Adafruit
+"DHT sensor Library" by Adafruit
+"MAX44009 Library" by Dan Tudose
+"PCF8583" by Xose Pérez
+"Adafruit BMP3XX Library" by Adafruit
+"RTClib" by Adafruit	
+"IridiumSBDi2c" by Sparkfun Electronics
+"Adafruit MAX31855 library" by Adafruit
+"ArduinoJson" by Benoit Blanchon
 
 ## Crédits
 Projet de Cryologger : https://cryologger.org/
