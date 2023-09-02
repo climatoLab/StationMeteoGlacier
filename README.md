@@ -17,6 +17,10 @@ L’objectif général de ce projet est la conception d'une station météorolog
 ## Transmission et traitement des données
 Les mesures des différents capteurs ainsi que la position GPS sont enregistrées toutes les heures et stockées en mémoire jusqu'à ce que l'intervalle de transmission souhaité soit atteinte. Les données sont compressées dans un message binaire pour minimiser le coût et le nombre total de transmissions requises. Les données sont transmises via le réseau satellite Iridium à des intervalles spécifiés par l'utilisateur. Par la suite les données sont reçus par une station Iridium au sol, traitées et envoyées à un serveur Thinsgboard.
 
+Tableau de bord de la station météo installée à Kuujuarapik en mai 2023 :
+
+https://thingsboard.cloud/dashboard/17a06570-f024-11ed-97ca-e57c88951dd5?publicId=cb8d6950-f06c-11ed-97ca-e57c88951dd5
+
 ## Contenu du référentiel (Repository )
 La branche StationMeteoGlacier contient un programme Arduino qui fonctionne avec différents capteurs et un enregistreur de données qui a été développé en même temps que le projet. Le programme a été conçu pour fonctionner avec le ESP32 Firebeetle de DFRobot.
 
