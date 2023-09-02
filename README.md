@@ -29,8 +29,8 @@ La branche StationMeteoGlacier contient un programme Arduino qui fonctionne avec
 - "tgp Decodeur" by Technologie du génie physique
 - "Adafruit LSM303 Accel" by Adafruit  
 	Installer les dépendances :
-	=> "Adafruit Unified Sensor"
-	=> "Adafruit Bus IO"
+	- "Adafruit Unified Sensor"
+	- "Adafruit Bus IO"
 - "SparkFun VL53L1X 4m Laser Distance Sensor"
 - "Adafruit GPS Library" by Adafruit
 - "DHT sensor Library" by Adafruit
