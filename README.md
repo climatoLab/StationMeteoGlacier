@@ -17,24 +17,15 @@ L’objectif général de ce projet est la conception d'une station météorolog
 ## Transmission et traitement des données
 Les mesures des différents capteurs ainsi que la position GPS sont enregistrées toutes les heures et stockées en mémoire jusqu'à ce que l'intervalle de transmission souhaité soit atteinte. Les données sont compressées dans un message binaire pour minimiser le coût et le nombre total de transmissions requises. Les données sont transmises via le réseau satellite Iridium à des intervalles spécifiés par l'utilisateur. Par la suite les données sont reçus par une station Iridium au sol, traitées et envoyées à un serveur Thinsgboard.
 
-## Contenu du référentiel
-
+## Contenu du référentiel (Repository )
+La branche StationMeteoGlacier contient un programme Arduino qui fonctionne avec différents capteurs et un enregistreur de données qui a été développé en même temps que le projet.
 
 ## License Information
 Ce projet est distribué sous la licence publique générale GNU v3.0
 
-
-
 <div id="top"></div>
 <!--
 Le document est une copie du ReadMe de la Station météo version école alors beaucoup de chose est à changer.
-
-
-
-
-
-
-
 
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
