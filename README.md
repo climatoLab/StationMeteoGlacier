@@ -5,7 +5,7 @@
 Le présent projet de recherche vise le développement d’une station météo à faibles coûts et capable de produire des données utiles pour surveiller la fonte des glaciers afin d’en anticiper les effets et pallier les conséquences. 
 
 ## Présentation du projet 
-L’objectif général de ce projet est la conception d'une station météorologique portative, autonome, fiable et à faible coût de manière à étudier la fonte des glaciers. Plus précisément, doit être capable de :
+L’objectif général de ce projet est la conception d'une station météorologique portative, autonome, fiable et à faible coût de manière à étudier la fonte des glaciers. Plus précisément, la station doit être capable de :
 - Prendre des mesures météorologiques de base : température, humidité, pression, vitesse et direction du vent, précipitations, ensoleillement et altitude;
 - Mesurer la variation d’épaisseur de la glace au sol;
 - Mesurer son déplacement terrestre (pour mesurer le déplacement du glacier sur lequel elle se trouve);
