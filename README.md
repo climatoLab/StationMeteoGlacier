@@ -1,6 +1,13 @@
 # ProjetClima - Station Météo Automatique (Glacier)
 ![StationMeteo_Glacier_pic2](https://github.com/climatoLab/StationMeteoGlacier/assets/102256913/b81ce2fa-4a42-488c-8efd-8a72bb7f2622)
 
+
+
+## License Information
+Ce projet est distribué sous la licence publique générale GNU v3.0
+
+
+
 <div id="top"></div>
 <!--
 Le document est une copie du ReadMe de la Station météo version école alors beaucoup de chose est à changer.
