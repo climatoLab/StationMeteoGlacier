@@ -20,7 +20,7 @@ Les mesures des différents capteurs ainsi que la position GPS sont enregistrée
 ## Contenu du référentiel (Repository )
 La branche StationMeteoGlacier contient un programme Arduino qui fonctionne avec différents capteurs et un enregistreur de données qui a été développé en même temps que le projet. Le programme a été conçu pour fonctionner avec le ESP32 Firebeetle de DFRobot.
 
-## Bibliothèques utilisées
+## Librairies utilisées
 
 ## Crédits
 Projet de Cryologger : https://cryologger.org/
