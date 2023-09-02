@@ -1,4 +1,5 @@
 # ProjetClima - Station Météo Automatique (Glacier)
+![StationMeteo_Glacier_pic2](https://github.com/climatoLab/StationMeteoGlacier/assets/102256913/b81ce2fa-4a42-488c-8efd-8a72bb7f2622)
 
 <div id="top"></div>
 <!--
@@ -29,7 +30,7 @@ Le document est une copie du ReadMe de la Station météo version école alors b
 
   <h3 align="center">Station météo glacier</h3>
 
-  ![StationMeteo_Glacier_pic2](https://github.com/climatoLab/StationMeteoGlacier/assets/102256913/b81ce2fa-4a42-488c-8efd-8a72bb7f2622)
+  
 
 
   <p align="center">
