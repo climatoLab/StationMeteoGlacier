@@ -1,4 +1,4 @@
-# Cryologger - Automatic Weather Station (AWS)
+# ProjetClima - Station Météo Automatique (Glacier)
 
 <div id="top"></div>
 <!--
