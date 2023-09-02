@@ -27,7 +27,7 @@ Le document est une copie du ReadMe de la Station météo version école alors b
 
   <h3 align="center">Station météo glacier</h3>
 
-  ![image](https://github.com/climatoLab/StationMeteoGlacier/assets/102256913/163adbbc-9400-4adc-8e8e-0f295ac8007d)
+  ![StationMeteo_Glacier_pic2](https://github.com/climatoLab/StationMeteoGlacier/assets/102256913/b81ce2fa-4a42-488c-8efd-8a72bb7f2622)
 
 
   <p align="center">
