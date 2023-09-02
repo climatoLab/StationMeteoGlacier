@@ -2,7 +2,7 @@
 ![StationMeteo_Glacier_pic2](https://github.com/climatoLab/StationMeteoGlacier/assets/102256913/b81ce2fa-4a42-488c-8efd-8a72bb7f2622)
 
 
-## Transmission et traikement des données
+## Transmission et traitement des données
 Les mesures des différents capteurs ainsi que la position GPS sont enregistrées toutes les heures et stockées en mémoire jusqu'à ce que l'intervalle de transmission souhaité soit atteinte. Les données sont compressées dans un message binaire pour minimiser le coût et le nombre total de transmissions requises. Les données sont transmises via le réseau satellite Iridium à des intervalles spécifiés par l'utilisateur. Par la suite les données sont reçus par une station Iridium au sol, traitées et envoyées à un serveur Thinsgboard.
 
 ## License Information
