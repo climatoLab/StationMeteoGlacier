@@ -1,5 +1,6 @@
 # ProjetClima - Station Météo Automatique (Glacier)
 ![StationMeteo_Glacier_pic2](https://github.com/climatoLab/StationMeteoGlacier/assets/102256913/b81ce2fa-4a42-488c-8efd-8a72bb7f2622)
+Photo de la station météo déployée au kilomètre 10,5 à Kuujjuarapik
 
 ## Objectifs
 L’objectif général de ce projet est la conception d'une station météorologique portative, autonome, fiable et à faible coût et capable de produire des données utiles pour surveiller la fonte des glaciers afin d’en anticiper les effets et pallier les conséquences
