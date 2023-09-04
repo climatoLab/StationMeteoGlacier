@@ -1,5 +1,5 @@
 # ProjetClima - Station Météo Automatique (Glacier)
-![StationMeteo_Glacier_pic2](https://github.com/climatoLab/StationMeteoGlacier/assets/102256913/b81ce2fa-4a42-488c-8efd-8a72bb7f2622)
+![StationMeteo_Glacier_pic2](https://github.com/climatoLab/StationMeteoGlacier/assets/102256913/95f78aa6-38ef-4310-b76b-416026506cf9)
 Photo de la station météo déployée au kilomètre 10,5 à Kuujjuarapik
 
 ## Objectifs
